@@ -296,6 +296,14 @@ h1,h2,h3,h4{margin:0;font-family:var(--disp);font-variation-settings:'wdth' 112;
   color:var(--ink-soft);margin-top:10px;padding-top:9px;border-top:1px solid var(--line)}
 .clegend span{display:inline-flex;align-items:center;gap:5px}
 .clegend i{width:9px;height:9px;border-radius:2px;flex:none}
+.covrow{margin-bottom:15px}
+.covrow:last-of-type{margin-bottom:0}
+.covlab{display:flex;align-items:baseline;gap:8px;font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink-faint);margin-bottom:8px}
+.covlab b{color:var(--ink);font-size:12.5px;font-weight:700;letter-spacing:0;text-transform:none;
+  font-family:var(--disp);font-variation-settings:'wdth' 118}
+.covlab em{margin-left:auto;font-style:normal;font-variant-numeric:tabular-nums;color:var(--ink)}
+.covrow .clegend{margin-top:8px;padding-top:8px}
 .ctable{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:10.5px;margin-top:10px;
   font-variant-numeric:tabular-nums}
 .ctable th{text-align:left;font-weight:500;color:var(--ink-faint);font-size:9px;letter-spacing:.09em;
@@ -1041,6 +1049,42 @@ function stageCounts(){
   Object.values(S.queue).forEach(e => { if(e.graduated) c[4]++; else if(e.stage >= 0) c[e.stage]++; });
   return c;
 }
+/* Coverage: unique problems and designs cleared, against what the plan holds.
+   Distinct from outcomeTotals(), which counts grade EVENTS, not problems. */
+function plannedProblems(){
+  const set = new Set();
+  for(let n=1;n<=NDAYS;n++){
+    const d = getDay(n);
+    [].concat(d.blocks.a, d.blocks.b, d.blocks.f, [d.mvd])
+      .forEach(t => { if(isLC(t.url)) set.add(slugOf(t.url)); });
+  }
+  return set;
+}
+function coverage(){
+  const planned = plannedProblems();
+  const lc = { total:planned.size, clean:0, rough:0, untouched:0, extra:0, extraClean:0 };
+  planned.forEach(sl => {
+    const log = S.grades[sl];
+    if(!log || !log.length){ lc.untouched++; return; }
+    if(log.some(h => h.g === "clean")) lc.clean++; else lc.rough++;
+  });
+  Object.keys(S.grades).forEach(k => {
+    if(planned.has(k)) return;
+    lc.extra++;
+    if((S.grades[k]||[]).some(h => h.g === "clean")) lc.extraClean++;
+  });
+  const D = allDesigns(), de = { total:D.length, crisp:0, okay:0, rusty:0, ungraded:0, untouched:0 };
+  D.forEach(d => {
+    const r = S.designs[d.id] || {};
+    if(!(r.attempts > 0)){ de.untouched++; return; }
+    if(r.grade === "crisp") de.crisp++;
+    else if(r.grade === "okay") de.okay++;
+    else if(r.grade === "rusty") de.rusty++;
+    else de.ungraded++;
+  });
+  de.attempted = de.total - de.untouched;
+  return { lc, de };
+}
 function designSpread(){
   const c = { new:0, rusty:0, okay:0, crisp:0 };
   allDesigns().forEach(d => { const r = S.designs[d.id]; c[(r && r.grade) || "new"]++; });
@@ -1097,7 +1141,7 @@ function stackBar(segs, opts){
     const pct = Math.round(s.value/total*100);
     g += '<g><title>'+esc(s.label+": "+s.value+" ("+pct+"%)")+"</title>"+
       '<path d="'+d+'" fill="'+s.color+'"/>'+
-      (w > 34 ? '<text x="'+(x+w/2)+'" y="17" text-anchor="middle" style="font-family:var(--mono);font-size:10px;font-weight:700" fill="var(--onfill)">'+s.value+"</text>" : "")+
+      (w > 34 ? '<text x="'+(x+w/2)+'" y="17" text-anchor="middle" style="font-family:var(--mono);font-size:10px;font-weight:700" fill="'+(s.fg||"var(--onfill)")+'">'+s.value+"</text>" : "")+
       "</g>";
     x += w + GAPPX;
   });
@@ -1456,7 +1500,7 @@ function renderDesignDetail(){
    RENDER — STATS
    ══════════════════════════════════════════════════════════════════════ */
 function renderStats(){
-  const d = daysDone(), out = outcomeTotals(), byDay = outcomeByDay(14);
+  const d = daysDone(), out = outcomeTotals(), byDay = outcomeByDay(14), cov = coverage();
   const bs = blockStats(), sc = stageCounts(), ds = designSpread(), due = dueReviews().length;
   const pct = (a,b) => b ? Math.round(a/b*100) : 0;
 
@@ -1466,7 +1510,34 @@ function renderStats(){
     '<div class="tile b"><b>'+currentStreak()+"</b><span>day streak</span><em>best "+bestStreak()+" · fallback holds it</em></div>"+
     '<div class="tile c"><b>'+(out.rate==null?"—":out.rate+"%")+"</b><span>clean solve rate</span><em>"+out.total+" graded</em></div>"+
     '<div class="tile d"><b>'+due+"</b><span>reviews due</span><em>"+Object.keys(S.queue).length+" in queue</em></div>"+
+    '<div class="tile a"><b>'+cov.lc.clean+'<span style="color:var(--ink-faint);font-size:15px">/'+cov.lc.total+'</span></b><span>problems solved</span><em>'+
+      (cov.lc.rough ? cov.lc.rough+" attempted, not clean yet" : "clean at least once")+
+      (cov.lc.extra ? " · +"+cov.lc.extra+" off-plan" : "")+"</em></div>"+
+    '<div class="tile c"><b>'+cov.de.attempted+'<span style="color:var(--ink-faint);font-size:15px">/'+cov.de.total+'</span></b><span>designs done</span><em>'+
+      cov.de.crisp+" graded crisp</em></div>"+
   "</div>";
+
+  /* coverage — each bar is 100% of its own bank, so the two are readable side by side */
+  const lcSeg = [
+    { label:"Solved clean",        value:cov.lc.clean,     color:"var(--done)" },
+    { label:"Attempted, not clean",value:cov.lc.rough,     color:"var(--fall)" },
+    { label:"Not started",         value:cov.lc.untouched, color:"var(--line-strong)", fg:"var(--ink)" }];
+  const deSeg = [
+    { label:"Crisp",       value:cov.de.crisp,     color:"var(--done)" },
+    { label:"Okay",        value:cov.de.okay,      color:"var(--fall)" },
+    { label:"Rusty",       value:cov.de.rusty,     color:"var(--alert)" },
+    { label:"Ungraded",    value:cov.de.ungraded,  color:"var(--run)" },
+    { label:"Not started", value:cov.de.untouched, color:"var(--line-strong)", fg:"var(--ink)" }];
+  h += '<section class="chart"><h4>Coverage</h4>'+
+    '<div class="cap">How much of each bank you have cleared. A problem counts as solved once you have graded it clean at least once.</div>'+
+    '<div class="covrow"><div class="covlab"><b>LeetCode</b><span>'+cov.lc.total+' in the plan</span><em>'+
+      cov.lc.clean+"/"+cov.lc.total+"</em></div>"+stackBar(lcSeg,{alt:"LeetCode coverage"})+
+      legendRow(lcSeg.filter(x=>x.value>0).map(x=>({label:x.label+" ("+x.value+")",color:x.color})))+"</div>"+
+    '<div class="covrow"><div class="covlab"><b>Design questions</b><span>'+cov.de.total+' in the bank</span><em>'+
+      cov.de.attempted+"/"+cov.de.total+"</em></div>"+stackBar(deSeg,{alt:"Design coverage"})+
+      legendRow(deSeg.filter(x=>x.value>0).map(x=>({label:x.label+" ("+x.value+")",color:x.color})))+"</div>"+
+    (cov.lc.extra ? '<p class="hint" style="margin-top:11px">'+cov.lc.extra+" problem"+(cov.lc.extra===1?"":"s")+" you added yourself sit outside the plan's "+cov.lc.total+" and are not counted in the bar above ("+cov.lc.extraClean+" solved clean).</p>" : "")+
+  "</section>";
 
   /* phase map */
   let rows = "";
@@ -1683,6 +1754,9 @@ function exportText(){
   L.push("progress: "+d.total+"/"+NDAYS+" days done ("+d.complete+" complete, "+d.fallback+" fallback)");
   L.push("streak: "+currentStreak()+" (best "+bestStreak()+")  ·  a fallback day holds the streak");
   L.push("grades logged: "+out.total+" ("+out.clean+" clean, "+out.struggled+" struggled, "+out.failed+" failed)"+(out.rate!=null?"  ·  clean rate "+out.rate+"%":""));
+  const cv = coverage();
+  L.push("problems solved: "+cv.lc.clean+"/"+cv.lc.total+" clean"+(cv.lc.rough?", "+cv.lc.rough+" attempted but not clean":"")+(cv.lc.extra?", +"+cv.lc.extra+" added off-plan":""));
+  L.push("designs done   : "+cv.de.attempted+"/"+cv.de.total+"  ("+cv.de.crisp+" crisp, "+cv.de.okay+" okay, "+cv.de.rusty+" rusty)");
   L.push("completion: sessions "+pc(bs.s[0],bs.s[1])+"  ·  light days "+pc(bs.l[0],bs.l[1])+"  ·  fallback "+pc(bs.m[0],bs.m[1]));
   L.push(""); L.push("═══ THE PLAN · "+NDAYS+" DAYS ═══");
   for(let n=1;n<=NDAYS;n++){
