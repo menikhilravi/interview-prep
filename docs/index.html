@@ -461,12 +461,12 @@ label.fl{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.13e
 <div id="celeroot"></div>
 <script>
 /* ══════════════════════════════════════════════════════════════════════════
-   SEED DATA — from master-plan.md + prep-tracker.html, re-paced.
-   The original 28-day sprint unpacked into 21 weeks of single 45-min
-   sessions: 16 weeks of training + the plan's own 5-week pipeline runway.
-   Content is redistributed, not invented — every task, link and dependency
-   is the plan's. The only new text is each day's fallback line, derived
-   from that day's own session.
+   SEED DATA — from master-plan.md + prep-tracker.html, re-paced and re-cut.
+   21 weeks of single 45-min sessions. Weeks 1–14 run six sessions + one light
+   day; weeks 15–21 run five + two, because screens and loops start landing.
+   Re-cut after an audit found the DSA set had 0 hard problems and 8 patterns
+   with no coverage at all. Design, depth and behavioural content is the plan's
+   own; the added DSA problems are the standard senior set for those patterns.
    ══════════════════════════════════════════════════════════════════════ */
 
 const NC   = "https://neetcode.io/roadmap";
@@ -496,198 +496,201 @@ const R = {
   hpa:{n:"HPA docs",u:"https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/"},
   lc:{n:"LeetCode",u:"https://leetcode.com/problemset/"}, haseeb:{n:"Haseeb: 10 rules",u:HASEEB}
 };
-const P = (t,u) => ({ t, u:"https://leetcode.com/problems/"+u+"/" });
+const P  = (t,u) => ({ t, u:"https://leetcode.com/problems/"+u+"/" });
 const SS = (t,h,items,m,res) => ({ t, h, items, m, res:res||[] });
+const LT = (t,items,m) => ({ t, h:"10–15 min · one-handed", items, m, light:true });
+const DSA = (t,items,m) => SS(t, "DSA · 45 min", items, m, [R.nc]);
 
 const STAGES = [
   { name:"Foundations", from:1,  to:5,  note:"Both design frameworks land here, and the serving-platform design — your home turf — gets done first. Patterns before volume." },
-  { name:"Breadth",     from:6,  to:10, note:"Trees, graphs, heaps. The streaming design is a shine round, not a pass round. Peer mocks begin." },
-  { name:"Depth",       from:11, to:14, note:"The hard stretch. DP will feel bad — that's the plan working. The failure story gets picked in week 11, no more deferring." },
-  { name:"Simulation",  from:15, to:16, note:"Cold topics and full loops. A real onsite is 4–5 hours and fatigue is what fails first loops — the mock runs back-to-back with no pause." },
+  { name:"Breadth",     from:6,  to:10, note:"Trees, graphs, heaps, tries. The streaming design is a shine round, not a pass round. Mocks run every other week from here." },
+  { name:"Depth",       from:11, to:14, note:"The hard stretch — DP, hard problems, and the designs you have never drawn. The failure story gets picked in week 11, no more deferring." },
+  { name:"Simulation",  from:15, to:16, note:"Cold topics and full loops. A real onsite is 4–5 hours and fatigue is what fails first loops — these mocks run back-to-back with no pause." },
   { name:"Pipeline",    from:17, to:21, note:"Training drops to maintenance and the pipeline takes over. Loops take 4–8 weeks: applying on day one of leave wastes three weeks in scheduling limbo." }
 ];
 
-/* 105 sessions · 5 per week (Mon Tue Wed Thu Sat) · 45 min, 60 on Saturday */
-const SESSIONS = [
-/* ─────────── FOUNDATIONS · week 1 ─────────── */
-SS("Arrays & hashing","DSA · 45 min",[P("Two Sum — 25 min, timed, out loud","two-sum"),P("Group Anagrams","group-anagrams")],"Two Sum, out loud",[R.nc]),
-SS("Arrays & hashing II","DSA · 45 min",[P("Top K Frequent Elements","top-k-frequent-elements"),P("Product of Array Except Self","product-of-array-except-self"),"Read the editorial for all four — even the solved ones"],"Top K Frequent, out loud",[R.nc]),
+/* Mon Tue Wed Thu Fri Sat Sun — weeks 1–14 are 6 sessions + Sunday light,
+   weeks 15–21 are 5 sessions + Friday and Sunday light. */
+const PLANWEEKS = [
+/* ═══ FOUNDATIONS ═══ */
+[ /* wk 1 */
+DSA("Arrays & hashing",[P("Two Sum — 25 min, timed, out loud","two-sum"),P("Group Anagrams","group-anagrams")],"Two Sum, out loud"),
+DSA("Arrays & hashing II",[P("Top K Frequent Elements","top-k-frequent-elements"),P("Product of Array Except Self","product-of-array-except-self"),"Read the editorial for all four — even the solved ones"],"Top K Frequent"),
 SS("The design framework","System design · 45 min",["Learn the 7-step framework","Write it onto index card #1 — you will redraw this from memory all month"],"The framework onto the card",[R.hi]),
-SS("K8s · pod lifecycle","Depth · K8s track 1 · 45 min",["Pod lifecycle end-to-end","Scheduling runs on requests, never limits — know why","QoS classes: Guaranteed / Burstable / BestEffort"],"Say the pod lifecycle out loud",[R.k8slc,R.k8sres]),
+DSA("Stacks",[P("Valid Parentheses — the most common warm-up there is","valid-parentheses"),P("Min Stack","min-stack")],"Valid Parentheses"),
+SS("K8s · pod lifecycle","Depth · K8s track 1 · 45 min",["Pod lifecycle end-to-end","Scheduling runs on requests, never limits — know why","QoS classes: Guaranteed / Burstable / BestEffort"],"The pod lifecycle, out loud",[R.k8slc,R.k8sres]),
 SS("K8s · the OOMKilled answer","Depth · K8s track 1 · 60 min",["OOMKilled vs Evicted vs CrashLoopBackOff — causes, and how logs and events differ","Write the half-page OOMKilled answer in standard vocabulary, not JPMC vocabulary"],"The half-page write-up",[R.k8slc]),
-/* week 2 */
-SS("Hashing drills","DSA · 45 min",[P("Contains Duplicate","contains-duplicate"),P("Valid Anagram","valid-anagram")],"Contains Duplicate, out loud",[R.nc]),
-SS("Hashing drills II","DSA · 45 min",[P("Longest Consecutive Sequence","longest-consecutive-sequence"),"Re-solve Two Sum cold — no notes"],"Longest Consecutive",[R.nc]),
+LT("Story #1 + jargon list",["Story #1 — self-serve Ray platform, 6h→15min. Bullet the STAR, then one 2.5-min rep","Start the jargon-translation list: TrueCD / AI-PES / C2C → Argo, KServe, hybrid-cloud","15-min week review — the worst area gets an extra session next week"],"Story #1, one rep")],
+[ /* wk 2 */
+DSA("Hashing drills",[P("Contains Duplicate","contains-duplicate"),P("Valid Anagram","valid-anagram")],"Contains Duplicate"),
+DSA("Hashing drills II",[P("Longest Consecutive Sequence","longest-consecutive-sequence"),"Re-solve Two Sum cold — no notes"],"Longest Consecutive"),
 SS("Design · rate limiter","System design · 45 min",["Design a rate limiter — 45 min, timed, out loud","Token bucket vs sliding window, distributed counters, hot keys"],"The rate limiter, untimed",[R.hi]),
 SS("Rate limiter · the gap list","System design · 45 min",["Read a strong write-up","List what you missed — that list is the actual output"],"Read the write-up",[R.hi]),
-SS("Two pointers","DSA · 60 min",[P("Valid Palindrome","valid-palindrome"),P("Two Sum II","two-sum-ii-input-array-is-sorted")],"Valid Palindrome",[R.nc]),
-/* week 3 */
-SS("3Sum","DSA · 45 min",[P("3Sum — 25 min, then say the invariant aloud","3sum")],"3Sum + the invariant, out loud",[R.nc]),
-SS("Two pointers II","DSA · 45 min",[P("Container With Most Water","container-with-most-water"),"Re-solve 3Sum cold"],"Container With Most Water",[R.nc]),
+DSA("Linked lists",[P("Reverse Linked List","reverse-linked-list"),P("Merge Two Sorted Lists","merge-two-sorted-lists")],"Reverse Linked List, from memory"),
+DSA("Two pointers",[P("Valid Palindrome","valid-palindrome"),P("Two Sum II","two-sum-ii-input-array-is-sorted")],"Valid Palindrome"),
+LT("Story #2 + latency card",["Story #2 — SLM serving API in under a month. One 2.5-min rep","Write the latency-numbers flashcard from memory (L1 → network, 86.4k sec/day)","15-min week review"],"Story #2, one rep")],
+[ /* wk 3 */
+DSA("3Sum",[P("3Sum — 25 min, then say the invariant aloud","3sum")],"3Sum + the invariant, out loud"),
+DSA("Two pointers II",[P("Container With Most Water","container-with-most-water"),"Re-solve 3Sum cold"],"Container With Most Water"),
 SS("Ray · architecture","Depth · Ray track 1 · 45 min",["Diagram Ray architecture from memory: head/worker, GCS, object store, tasks vs actors"],"The diagram, from memory",[R.raycore,R.ray]),
 SS("Ray · why Ray","Depth · Ray track 1 · 45 min",["Trace the Ray Serve request path: ingress → router → replica","Write “why Ray vs KServe / Triton / Seldon / BentoML” — this question is guaranteed"],"The why-Ray answer, out loud",[R.ray]),
+DSA("Linked lists II",[P("Linked List Cycle — know Floyd's, not the set trick","linked-list-cycle"),P("Remove Nth Node From End","remove-nth-node-from-end-of-list")],"Linked List Cycle"),
 SS("The ML-infra framework","System design · 60 min",["Extend the framework: model lifecycle, rollout, GPU/cost, monitoring","Write it onto index card #2"],"Index card #2",[R.hi,R.ey]),
-/* week 4 */
-SS("Design #1 · serving platform","ML infra design · 45 min",["Design a serving platform for 50 teams — from a BLANK page","Do not look at what you built until the timer stops"],"The design, untimed",[R.hi,R.ey,R.ch]),
-SS("Design #1 · the diff","ML infra design · 45 min",["Diff your blank-page design against what you actually built","Write the 3 hardest follow-ups — multi-tenancy? noisy neighbour? GPU bin-packing? — and answer them"],"The three follow-ups",[R.ey]),
-SS("Sliding window","DSA · 45 min",[P("Best Time to Buy & Sell Stock","best-time-to-buy-and-sell-stock"),P("Longest Substring Without Repeating","longest-substring-without-repeating-characters")],"Buy & Sell Stock",[R.nc]),
-SS("Sliding window II","DSA · 45 min",[P("Longest Repeating Character Replacement","longest-repeating-character-replacement"),"Redo one problem you failed this month"],"Longest Repeating Char Replacement",[R.nc]),
+LT("Story #4 + warm-up list",["Story #4 — gateway pushback, latency vs safety. One rep","Warm-up company list: 8 names — Etsy, Squarespace, Vimeo, Justworks, Lemonade, Oscar and two more","15-min week review"],"Story #4, one rep")],
+[ /* wk 4 */
+SS("Design #1 · serving platform","ML infra design · 45 min",["Design a serving platform for 50 teams — from a BLANK page","Then diff against what you actually built, and write the 3 hardest follow-ups"],"The design, untimed",[R.hi,R.ey,R.ch]),
+DSA("Sliding window",[P("Best Time to Buy & Sell Stock","best-time-to-buy-and-sell-stock"),P("Longest Substring Without Repeating","longest-substring-without-repeating-characters")],"Buy & Sell Stock"),
+DSA("Sliding window II",[P("Longest Repeating Character Replacement","longest-repeating-character-replacement"),P("Permutation in String","permutation-in-string")],"Longest Repeating Char Replacement"),
+DSA("Greedy",[P("Maximum Subarray — Kadane's, say the invariant","maximum-subarray"),P("Jump Game","jump-game")],"Maximum Subarray"),
+DSA("Linked lists III",[P("Reorder List","reorder-list"),P("Copy List with Random Pointer","copy-list-with-random-pointer")],"Reorder List"),
 SS("Write-up · rate limiter","Consolidation · 60 min",["Write the rate limiter design from memory — one page, no notes","Start the failed-problems list if you have not"],"The write-up, half a page",[R.hi]),
-/* week 5 */
-SS("Binary search","DSA · 45 min",[P("Binary Search — template from memory until the off-by-ones die","binary-search"),P("Koko Eating Bananas","koko-eating-bananas")],"The template from memory",[R.nc]),
-SS("Binary search II","DSA · 45 min",[P("Find Minimum in Rotated Sorted Array","find-minimum-in-rotated-sorted-array"),P("Search in Rotated Sorted Array","search-in-rotated-sorted-array")],"Find Min Rotated",[R.nc]),
+LT("Story #3 + target list",["Story #3 — TrueCD 79.6→99.4%. ZERO internal jargon. One rep","Real-target company list: 20 names off the tier list","15-min week review"],"Story #3, one rep — jargon-free")],
+[ /* wk 5 */
+DSA("Binary search",[P("Binary Search — template from memory until the off-by-ones die","binary-search"),P("Koko Eating Bananas","koko-eating-bananas")],"The template from memory"),
+DSA("Binary search II",[P("Find Minimum in Rotated Sorted Array","find-minimum-in-rotated-sorted-array"),P("Search in Rotated Sorted Array","search-in-rotated-sorted-array")],"Find Min Rotated"),
 SS("Inference · KV cache math","Depth · Inference track 1 · 45 min",["KV cache memory math with YOUR real model numbers","Get to the point where the arithmetic is instant"],"KV math on paper",[R.vllm]),
 SS("Inference · batching","Depth · Inference track 1 · 45 min",["Continuous vs static batching — explain the vLLM win out loud","Map your sizing-logic vLLM env vars to the WHY behind each"],"Continuous batching, out loud",[R.vllm,R.vblog]),
+DSA("Stacks II",[P("Daily Temperatures — the monotonic stack","daily-temperatures"),P("Car Fleet","car-fleet")],"Daily Temperatures"),
 SS("Self-mock · recorded medium","Mock · 60 min",["Record an unseen medium — 35 min, narrating throughout","Watch at 1.5× — log dead air, silent debugging, missing complexity"],"The recorded medium",[R.iio]),
-/* ─────────── BREADTH · week 6 ─────────── */
-SS("Trees","DSA · 45 min",[P("Invert Binary Tree","invert-binary-tree"),P("Maximum Depth","maximum-depth-of-binary-tree")],"Invert + Max Depth",[R.nc]),
-SS("Trees II","DSA · 45 min",[P("Diameter of Binary Tree","diameter-of-binary-tree"),P("Balanced Binary Tree","balanced-binary-tree"),P("Same Tree","same-tree")],"Diameter",[R.nc]),
+LT("Story #8 + jargon pass",["Story #8 — EMR→Ray 6x. Mechanistic, not just the number. One rep","Jargon-list pass: anything new from this week's depth work","15-min week review — foundations end here"],"Story #8, one rep")],
+/* ═══ BREADTH ═══ */
+[ /* wk 6 */
+DSA("Trees",[P("Invert Binary Tree","invert-binary-tree"),P("Maximum Depth","maximum-depth-of-binary-tree"),P("Same Tree","same-tree")],"Invert + Max Depth"),
+DSA("Trees II",[P("Diameter of Binary Tree","diameter-of-binary-tree"),P("Balanced Binary Tree","balanced-binary-tree")],"Diameter"),
 SS("K8s · networking","Depth · K8s track 2 · 45 min",["Services, kube-proxy, ingress, DNS, CNI — concept level, no yaml"],"Draw the request path into a pod",[R.k8snet]),
 SS("K8s · probes","Depth · K8s track 2 · 45 min",["Liveness vs readiness vs startup probes","How bad probes cause outages — one concrete failure story you can tell"],"The probe failure story",[R.k8sprobe]),
-SS("Write-up · serving platform","Consolidation · 60 min",["Write the serving platform design from memory — one page","Redo any failed problem still unfixed"],"The write-up, half a page",[R.ey]),
-/* week 7 */
-SS("Trees III","DSA · 45 min",[P("Lowest Common Ancestor of BST","lowest-common-ancestor-of-a-binary-search-tree"),P("Binary Tree Level Order Traversal","binary-tree-level-order-traversal")],"LCA of BST",[R.nc]),
-SS("Trees IV","DSA · 45 min",[P("Right Side View","binary-tree-right-side-view"),P("Validate BST","validate-binary-search-tree")],"Validate BST",[R.nc]),
+DSA("Matrix",[P("Rotate Image","rotate-image"),P("Spiral Matrix","spiral-matrix")],"Rotate Image"),
+DSA("Trees III",[P("Lowest Common Ancestor of BST","lowest-common-ancestor-of-a-binary-search-tree"),P("Binary Tree Level Order Traversal","binary-tree-level-order-traversal")],"LCA of BST"),
+LT("Story #5 + dream list",["Story #5 — pgvector vs OpenSearch benchmark. One rep","Dream company list: 6 names. Tracker live","15-min week review"],"Story #5, one rep")],
+[ /* wk 7 */
+DSA("Trees IV",[P("Right Side View","binary-tree-right-side-view"),P("Validate BST","validate-binary-search-tree")],"Validate BST"),
 SS("Design · metrics pipeline","System design · 45 min · SHINE",["Design a metrics/logging pipeline — your edge","Kafka, aggregation windows, hot partitions, retention tiers"],"The skeleton on paper",[R.hi]),
 SS("Metrics pipeline · narrate it","System design · 45 min",["Narrate exactly-once semantics, watermarking and backpressure like the Flink operator you are","Gap list against a reference write-up"],"Exactly-once, out loud",[R.hi]),
+DSA("Trees V · the hard one",[P("Construct Binary Tree from Preorder and Inorder","construct-binary-tree-from-preorder-and-inorder-traversal"),P("Binary Tree Maximum Path Sum — HARD","binary-tree-maximum-path-sum")],"Construct from Preorder/Inorder"),
+DSA("Bit manipulation",[P("Number of 1 Bits","number-of-1-bits"),P("Counting Bits","counting-bits"),P("Reverse Bits","reverse-bits")],"Number of 1 Bits"),
 SS("Peer mock #1 · coding","Mock · 60 min",["Coding mock on Pramp or interviewing.io","Debrief within the hour — write it down"],"The mock",[R.pramp,R.iio]),
-/* week 8 */
-SS("Graphs","DSA · 45 min",[P("Number of Islands","number-of-islands"),P("Clone Graph","clone-graph")],"Number of Islands",[R.nc]),
-SS("Graphs II","DSA · 45 min",[P("Rotting Oranges","rotting-oranges"),P("Course Schedule","course-schedule")],"Course Schedule",[R.nc]),
+LT("Story #6 + LinkedIn",["Story #6 — Agent-Debug. What incident motivated it? One rep","LinkedIn headline + open-to-work, recruiters-only","15-min week review"],"Story #6, one rep")],
+[ /* wk 8 */
+DSA("Graphs",[P("Number of Islands","number-of-islands"),P("Clone Graph","clone-graph")],"Number of Islands"),
+DSA("Graphs II",[P("Rotting Oranges","rotting-oranges"),P("Course Schedule","course-schedule")],"Course Schedule"),
 SS("Ray · autoscaling internals","Depth · Ray track 2 · 45 min",["Ray Serve autoscaling and request batching internals","Replica placement"],"Autoscaling, out loud",[R.rayauto,R.ray]),
 SS("Ray · the 6x story","Depth · Ray track 2 · 45 min",["Rehearse the mechanistic 6x-vs-EMR story out loud","Task overhead, serialization, data locality, warm clusters — the number alone is not the answer"],"The 6x story, out loud",[R.ray]),
-SS("Design #2 · LLM inference","ML infra design · 60 min",["Design an LLM inference service: p99 < 500ms @ 1K QPS","Routing, continuous batching, KV memory budget, autoscaling on queue depth"],"The design, untimed",[R.vllm,R.hi]),
-/* week 9 */
-SS("Graphs III","DSA · 45 min",[P("Course Schedule II","course-schedule-ii"),P("Pacific Atlantic Water Flow","pacific-atlantic-water-flow")],"Course Schedule II",[R.nc]),
-SS("Graphs IV","DSA · 45 min",[P("Connected Components","number-of-connected-components-in-an-undirected-graph"),P("Graph Valid Tree","graph-valid-tree")],"Graph Valid Tree",[R.nc]),
-SS("Design #2 · degradation","ML infra design · 45 min",["Define the degradation strategy when the service is overloaded","Write the LLM inference design up from memory"],"The degradation strategy",[R.vllm]),
-SS("ML fluency · skew","Depth · ML fluency 1 · 45 min",["Training/serving skew, and how feature stores fix it — and what they don't"],"Skew, out loud",[R.ch,R.feast]),
-SS("ML fluency · shadow & canary","Depth · ML fluency 1 · 60 min",["Shadow and canary rollouts","Own your shadow-router work in standard vocabulary"],"Shadow vs canary, out loud",[R.ch]),
-/* week 10 */
-SS("Heaps","DSA · 45 min",[P("Kth Largest Element","kth-largest-element-in-an-array"),P("Last Stone Weight","last-stone-weight")],"Kth Largest",[R.nc]),
-SS("Heaps II","DSA · 45 min",[P("K Closest Points to Origin","k-closest-points-to-origin"),P("Task Scheduler","task-scheduler")],"Task Scheduler",[R.nc]),
+DSA("Tries",[P("Implement Trie","implement-trie-prefix-tree"),P("Design Add and Search Words","design-add-and-search-words-data-structure")],"Implement Trie, from memory"),
+SS("Design #2 · LLM inference","ML infra design · 60 min",["Design an LLM inference service: p99 < 500ms @ 1K QPS","Routing, continuous batching, KV memory budget, autoscaling on queue depth","Define the degradation strategy when overloaded"],"The design, untimed",[R.vllm,R.hi]),
+LT("Story #7 + jargon audit",["Story #7 — mentorship, leading the team. One rep","Jargon-list audit: is it past 10 entries yet?","15-min week review"],"Story #7, one rep")],
+[ /* wk 9 */
+DSA("Graphs III",[P("Course Schedule II","course-schedule-ii"),P("Pacific Atlantic Water Flow","pacific-atlantic-water-flow")],"Course Schedule II"),
+DSA("Graphs IV",[P("Connected Components","number-of-connected-components-in-an-undirected-graph"),P("Graph Valid Tree","graph-valid-tree")],"Graph Valid Tree"),
+SS("ML fluency · skew","Depth · ML fluency 1 · 45 min",["Training/serving skew, and how feature stores fix it — and what they don't","Shadow and canary rollouts — own your shadow-router work in standard vocabulary"],"Skew, out loud",[R.ch,R.feast]),
+DSA("Advanced graphs",[P("Network Delay Time — Dijkstra","network-delay-time"),P("Min Cost to Connect All Points — MST","min-cost-to-connect-all-points")],"Network Delay Time"),
+DSA("Advanced graphs II",[P("Cheapest Flights Within K Stops — Bellman-Ford","cheapest-flights-within-k-stops"),P("Word Search II — HARD, trie + backtracking","word-search-ii")],"Cheapest Flights"),
+SS("Peer mock #2 · system design","Mock · 60 min",["System design mock — pick an ML infra prompt if the platform lets you","Debrief within the hour"],"The mock",[R.pramp,R.hi]),
+LT("Story #9",["Story #9 — agentic onboarding skill, the ambiguity story. One rep","Flashcards: Serve autoscaling, training/serving skew","15-min week review"],"Story #9, one rep")],
+[ /* wk 10 */
+DSA("Heaps",[P("Kth Largest Element","kth-largest-element-in-an-array"),P("Last Stone Weight","last-stone-weight")],"Kth Largest"),
+DSA("Heaps II",[P("K Closest Points to Origin","k-closest-points-to-origin"),P("Task Scheduler","task-scheduler")],"Task Scheduler"),
 SS("Design #3 · feature store","ML infra design · 45 min",["Design a feature store: online/offline parity, point-in-time correctness, materialization"],"The design, untimed",[R.feast,R.ch]),
-SS("Feature store · write-up","ML infra design · 45 min",["Write the feature store design from memory","Half-way audit: is the jargon list past 10 entries?"],"The write-up",[R.feast]),
-SS("Failed-problems sweep","Consolidation · 60 min",["Redo every problem still sitting failed in the review queue","Priority order is whatever the queue puts on top"],"Two problems off the queue",[R.nc]),
-/* ─────────── DEPTH · week 11 ─────────── */
-SS("DP · the base cases","DSA · DP-1 · 45 min",[P("Climbing Stairs","climbing-stairs"),P("Min Cost Climbing Stairs","min-cost-climbing-stairs")],"Climbing Stairs + the recurrence, out loud",[R.nc]),
-SS("DP · house robber","DSA · DP-1 · 45 min",[P("House Robber","house-robber"),P("House Robber II","house-robber-ii")],"House Robber + recurrence out loud",[R.nc]),
+DSA("In-code design",[P("LRU Cache — asked more than almost anything else","lru-cache"),P("Design Twitter","design-twitter")],"LRU Cache, from memory"),
+DSA("In-code design II · hard",[P("Find Median from a Data Stream — HARD, two heaps","find-median-from-data-stream"),P("Merge K Sorted Lists — HARD","merge-k-sorted-lists")],"Find Median from a Data Stream"),
+SS("Peer mock #3 · coding","Mock · 60 min",["Coding mock — ask for a medium you have not seen","Debrief within the hour"],"The mock",[R.pramp,R.iio]),
+LT("Story #10 + tracker",["Story #10 — cost work: lifecycle policies, decommissioning. One rep","Tracker update — flag any target posting already live","15-min week review — breadth ends here"],"Story #10, one rep")]
+,
+/* ═══ DEPTH ═══ */
+[ /* wk 11 */
+DSA("DP · the base cases",[P("Climbing Stairs","climbing-stairs"),P("Min Cost Climbing Stairs","min-cost-climbing-stairs")],"Climbing Stairs + the recurrence, out loud"),
+DSA("DP · house robber",[P("House Robber","house-robber"),P("House Robber II","house-robber-ii")],"House Robber + recurrence out loud"),
+SS("Design · chat system","System design · 45 min",["Design a chat/messaging system: fan-out, presence, ordering, delivery guarantees"],"The skeleton on paper",[R.hi]),
 SS("Inference · quantization","Depth · Inference track 2 · 45 min",["Quantization: INT8/INT4, AWQ vs GPTQ, the quality/latency tradeoff"],"AWQ vs GPTQ, out loud",[R.vllm]),
 SS("Inference · prefill vs decode","Depth · Inference track 2 · 45 min",["Speculative decoding","Prefill vs decode — why they bottleneck differently"],"Prefill vs decode, out loud",[R.vllm]),
-SS("Design · chat system","System design · 60 min",["Design a chat/messaging system: fan-out, presence, ordering, delivery guarantees"],"The skeleton on paper",[R.hi]),
-/* week 12 */
-SS("DP · coin change","DSA · DP-2 · 45 min",[P("Coin Change","coin-change"),P("Word Break","word-break")],"Coin Change",[R.nc]),
-SS("DP · decode ways","DSA · DP-2 · 45 min",[P("Decode Ways","decode-ways"),"Redo one DP problem you failed"],"Decode Ways",[R.nc]),
+SS("Peer mock #4 · system design","Mock · 60 min",["System design mock — take an ML infra prompt","Debrief within the hour"],"The mock",[R.pramp,R.hi]),
+LT("PICK story #11",["Pick the failure story today. No more deferring.","A design that didn't scale, or a rollout that went sideways. An honest one, not a humblebrag","15-min week review"],"Pick it. Write two lines")],
+[ /* wk 12 */
+DSA("DP · coin change",[P("Coin Change","coin-change"),P("Word Break","word-break")],"Coin Change"),
+DSA("DP · decode ways",[P("Decode Ways","decode-ways"),P("Maximum Product Subarray","maximum-product-subarray")],"Decode Ways"),
 SS("K8s · autoscalers","Depth · K8s track 3 · 45 min",["HPA / VPA / cluster-autoscaler interactions — and how they fight each other"],"The three autoscalers, out loud",[R.hpa]),
 SS("K8s · GPU scheduling","Depth · K8s track 3 · 45 min",["GPU scheduling: device plugin, node pools — explain YOUR node-pool selection logic in standard terms","The pending-pod debugging flow"],"Pending-pod debug flow",[R.gpu]),
-SS("Peer mock #2 · system design","Mock · 60 min",["System design mock this time","Debrief within the hour"],"The mock",[R.pramp,R.hi]),
-/* week 13 */
-SS("DP · subsequences","DSA · DP-3 · 45 min",[P("Longest Increasing Subsequence","longest-increasing-subsequence"),P("Unique Paths","unique-paths")],"LIS — the idea, out loud",[R.nc]),
-SS("DP · LCS + intervals","DSA · 45 min",[P("Longest Common Subsequence","longest-common-subsequence"),P("Merge Intervals","merge-intervals")],"Merge Intervals",[R.nc]),
+DSA("Hard set · stacks and arrays",[P("Trapping Rain Water — HARD","trapping-rain-water"),P("Largest Rectangle in Histogram — HARD","largest-rectangle-in-histogram")],"Trapping Rain Water — the two-pointer version"),
+SS("Peer mock #5 · coding","Mock · 60 min",["Coding mock. Ask for a hard if the platform allows it","Debrief within the hour"],"The mock",[R.pramp,R.iio]),
+LT("Story #12",["Story #12 — why leaving. Zero JPMC negativity. Pull, not push. One rep","Flashcards: quantization tradeoffs, prefill vs decode","15-min week review"],"Story #12, one rep")],
+[ /* wk 13 */
+DSA("DP · subsequences",[P("Longest Increasing Subsequence","longest-increasing-subsequence"),P("Unique Paths","unique-paths")],"LIS — the idea, out loud"),
+DSA("DP · 2-D",[P("Longest Common Subsequence","longest-common-subsequence"),P("Longest Palindromic Substring","longest-palindromic-substring")],"LCS"),
 SS("Design #4 · enterprise RAG","ML infra design · 45 min",["Design enterprise RAG + ingestion — your S3→OpenSearch pattern generalized","Chunking, embedding refresh, index swaps, eval"],"The RAG design, untimed",[R.ey]),
 SS("Design #5 · model CI/CD","ML infra design · 45 min",["Design model CI/CD rollout: shadow → canary → auto-rollback triggers"],"The rollback triggers",[R.ev]),
-SS("Design #7 · inference gateway","ML infra design · 60 min",["Multi-region inference gateway + guardrails — your GenAI gateway arguments formalized","Routing, failover, latency budget per hop, guardrail placement"],"The latency budget per hop",[R.hi]),
-/* week 14 */
-SS("Intervals + backtracking","DSA · 45 min",[P("Non-overlapping Intervals","non-overlapping-intervals"),P("Subsets","subsets")],"Non-overlapping Intervals",[R.nc]),
-SS("Backtracking","DSA · 45 min",[P("Combination Sum","combination-sum"),P("Permutations","permutations")],"Combination Sum",[R.nc]),
+SS("Design #7 · inference gateway","ML infra design · 45 min",["Multi-region inference gateway + guardrails — your GenAI gateway arguments formalized","Routing, failover, latency budget per hop, guardrail placement"],"The latency budget per hop",[R.hi]),
+SS("Peer mock #6 · coding","Mock · 60 min",["Coding mock — whichever pattern the review queue says is weakest","Debrief within the hour"],"The mock",[R.pramp,R.iio]),
+LT("Rehearse #11",["Rehearse the failure story aloud. The first rep is the hardest — that is the point","15-min week review"],"Story #11, one rep")],
+[ /* wk 14 */
+DSA("DP · edit distance",[P("Edit Distance","edit-distance"),P("Coin Change II","coin-change-ii")],"Edit Distance — the table, on paper"),
+DSA("Backtracking",[P("Subsets","subsets"),P("Combination Sum","combination-sum")],"Subsets"),
+DSA("Backtracking II",[P("Permutations","permutations"),P("Word Search","word-search")],"Permutations"),
 SS("Design #6 · monitoring & drift","ML infra design · 45 min",["Drift and monitoring, offline vs online eval, A/B guardrails","Sketch the monitoring/drift pipeline as a 20-minute mini"],"The 20-min mini",[R.ev]),
-SS("Gateway · write-up","Consolidation · 45 min",["Write the inference gateway design up from memory"],"The write-up",[R.hi]),
-SS("Mixed DSA","DSA · 60 min",[P("Word Search","word-search"),P("Meeting Rooms (LC Premium)","meeting-rooms"),P("Meeting Rooms II (LC Premium)","meeting-rooms-ii")],"One random unseen medium, timed",[R.nc,R.lc]),
-/* ─────────── SIMULATION · week 15 ─────────── */
+DSA("Hard set · graphs and trees",[P("Alien Dictionary — HARD","alien-dictionary"),P("Serialize and Deserialize Binary Tree — HARD","serialize-and-deserialize-binary-tree")],"Alien Dictionary — the topo sort"),
+DSA("Intervals",[P("Merge Intervals","merge-intervals"),P("Non-overlapping Intervals","non-overlapping-intervals"),P("Meeting Rooms II (LC Premium)","meeting-rooms-ii")],"Merge Intervals"),
+LT("Story #13 + bank pass",["Story #13 — why finance. Seven years building financial systems; you want engineering to be the product. One rep","All 13 story titles from memory. Any you can't name is the one to rehearse next","15-min week review — depth ends here"],"All 13 titles, from memory")],
+/* ═══ SIMULATION — five sessions, Friday and Sunday light ═══ */
+[ /* wk 15 */
 SS("Design #8 · batch inference","ML infra design · 45 min",["Design batch inference for 100M items/day — your Ray batch work generalized"],"The design, untimed",[R.ray]),
 SS("Design #9 · A/B platform","ML infra design · 45 min",["Design an A/B experimentation platform — coldest topic, treat it as a learning design"],"The design, untimed",[R.ey]),
 SS("Design #10 · GPU scheduler","ML infra design · 45 min",["Design a GPU capacity scheduler for shared inference — second coldest, learning design"],"The design, untimed",[R.gpu]),
-SS("Mixed DSA, timed","DSA · 45 min",["One easy warm-up","One unseen medium, timed at 25 minutes"],"The medium, timed",[R.nc]),
+DSA("Hard set · sliding window",[P("Sliding Window Maximum — HARD","sliding-window-maximum"),P("Partition Equal Subset Sum","partition-equal-subset-sum")],"Sliding Window Maximum"),
+LT("Draft the narrative",["Draft the 90-second “tell me about yourself”. Lead with the proof points, not the chronology"],"The draft"),
 SS("Mock loop · stamina","Mock · 60 min · no pause",["Self-run coding round: unseen medium, 35 min, recorded","Straight into a 40-minute design — no break. Fatigue is what fails first loops"],"The coding half",[R.iio]),
-/* week 16 */
+LT("Flashcards + review",["Flashcards: all four depth tracks, mixed and shuffled","15-min week review"],"The 15-min review")],
+[ /* wk 16 */
 SS("Mock loop · the watch-back","Consolidation · 45 min",["Watch both rounds back","Gap list — this is what the last two weeks fix"],"The gap list",[]),
 SS("Depth blitz","Depth · 45 min",["Ray / K8s / inference flashcards","Re-explain “why Ray vs alternatives” cold"],"Why-Ray, cold",[R.ray,R.vllm]),
 SS("Behavioral mock","Mock · 45 min",["Record stories #3, #4 and #11 against realistic prompts","Watch back for jargon leaks and for rambling past 3 minutes"],"Record #11",[]),
-SS("Final sweep","Consolidation · 45 min",["Mixed DSA ×2, timed","Last pass over the failed-problems list"],"Two mediums, timed",[R.nc]),
-SS("THE GATE","Checkpoint · 60 min",["Medium in 25 minutes?","Clean 45-minute design, cold?","13 stories, jargon-free?","Ray-vs-alternatives crisp? KV math instant?","Score honestly — every gap becomes a maintenance priority"],"The gate, scored honestly",[]),
-/* ─────────── PIPELINE · week 17 (−5) ─────────── */
+SS("Final sweep","Consolidation · 45 min",["Mixed DSA ×2, timed","Last pass over every problem the queue still has failed"],"Two mediums, timed",[R.nc]),
+LT("Record the narrative",["Polish the 90-second narrative and record it. Watch it back once"],"Record it"),
+SS("THE GATE","Checkpoint · 60 min",["Medium in 25 minutes? A hard in 40?","Clean 45-minute design, cold?","13 stories, jargon-free?","Ray-vs-alternatives crisp? KV math instant?","Score honestly — every gap becomes a maintenance priority"],"The gate, scored honestly",[]),
+LT("Calendar the maintenance",["Write the maintenance rhythm into your calendar: the queue decides your DSA, one design write-up a fortnight, stories stay fresh","Training ends here. The pipeline starts Monday"],"The calendar entries")],
+/* ═══ PIPELINE ═══ */
+[ /* wk 17 · −5 */
 SS("Build the tracker","Pipeline · 45 min",["Build the 34-company tracker from the tier list","Warm-ups sequenced first — they are the best mocks you will get"],"The warm-up tier, listed",[]),
 SS("Warm-network blast I","Pipeline · 45 min",["First 12 people. Personal, short, specific about what you want"],"Five messages sent",[]),
 SS("Warm-network blast II","Pipeline · 45 min",["Remaining 10–13 people","Reply to every recruiter who has ever pinged you"],"The recruiter replies",[]),
 SS("Maintenance DSA","DSA · 45 min",["Two problems off the review queue, whatever it puts on top"],"One problem off the queue",[R.nc]),
+LT("Two weakest stories",["Whichever two stories you could not name from memory. Timed reps"],"One story, timed"),
 SS("External mock","Mock · 60 min",["interviewing.io or peer — whichever round wobbled most this month","Debrief"],"The mock",[R.iio]),
-/* week 18 (−4) */
+LT("Tracker complete",["34 companies tiered, warm-ups sequenced first","Every application logged with its date"],"The tracker, current")],
+[ /* wk 18 · −4 */
 SS("Resume · ML platform","Pipeline · 45 min",["Freeze the ML-platform resume to one page","Verify the metrics: p50 alongside p99, the load-test basis for 1,200 req/s"],"One page, frozen",[]),
 SS("Resume · backend","Pipeline · 45 min",["The backend variant for pure SWE and fund core-eng roles","Mirror each JD's keywords in the skills section"],"The backend variant",[]),
 SS("Cold applications","Pipeline · 45 min",["Warm-up tier first, then live target postings"],"Five applications out",[]),
+SS("Maintenance DSA","DSA · 45 min",["Two problems off the review queue"],"One problem off the queue",[R.nc]),
+LT("Stories #3 and #4",["Timed reps. These two come up earliest in loops — impact and conflict"],"One of them, timed"),
+SS("Maintenance design","ML infra design · 60 min",["One design again, 45 min, cold — whichever you graded rustiest"],"The design, untimed",[R.hi]),
+LT("Log the questions",["Log every question you were asked this week. They repeat across companies"],"The log")],
+[ /* wk 19 · −3 */
 SS("Hiring-manager notes","Pipeline · 45 min",["5–10 personalized notes. Not templates — name the system you'd want to work on"],"Three notes sent",[]),
-SS("Maintenance design","ML infra design · 60 min",["One cold-topic design again, 45 min, cold — whichever you graded rustiest"],"The design, untimed",[R.hi]),
-/* week 19 (−3) */
-SS("Maintenance DSA","DSA · 45 min",["Two problems off the review queue"],"One problem off the queue",[R.nc]),
 SS("The awkward lines","Pipeline · 45 min",["Rehearse the parental-leave line until it is automatic: “I'm on parental leave, which gives me unusual flexibility for interviews.”","Rehearse the comp-deflection line. Deflect until offers exist"],"Both lines, out loud",[R.haseeb]),
-SS("Questions for them","Pipeline · 45 min",["Five sharp questions per tier: startup, big tech, fund","The questions are an evaluation signal, not filler"],"Five questions, one tier",[]),
 SS("Maintenance DSA","DSA · 45 min",["Two problems off the review queue"],"One problem off the queue",[R.nc]),
+SS("Questions for them","Pipeline · 45 min",["Five sharp questions per tier: startup, big tech, fund","The questions are an evaluation signal, not filler"],"Five questions, one tier",[]),
+LT("Story #11, timed",["The failure story, timed. It will be asked, and it is the one that goes long"],"Story #11, timed"),
 SS("Screen-gap mock","Mock · 60 min",["Mock whichever round wobbled in this week's screens"],"The mock",[R.iio,R.pramp]),
-/* week 20 (−2) */
+LT("Log the questions",["Log every screen question. Patterns show up by the third company"],"The log")],
+[ /* wk 20 · −2 */
 SS("Onsite scheduling","Pipeline · 45 min",["Push onsite scheduling into leave weeks 1–3","Warm-ups earliest. Max 2 onsites a week"],"The calendar, drafted",[]),
-SS("Maintenance design write-up","ML infra design · 45 min",["One design write-up from memory, one page"],"Half a page",[R.hi]),
 SS("Pre-interview sweep I","Consolidation · 45 min",["Every graduated problem, cold. Anything you cleared in October has not been touched since"],"Two graduated problems, cold",[R.nc]),
 SS("Pre-interview sweep II","Consolidation · 45 min",["Continue the graduated sweep","Anything that fails drops straight back to +1 day"],"Two more, cold",[R.nc]),
+SS("Maintenance design write-up","ML infra design · 45 min",["One design write-up from memory, one page"],"Half a page",[R.hi]),
+LT("The proof-point three",["Stories #1, #2 and #8, timed. These carry the ML-platform brand"],"One of them, timed"),
 SS("Story-bank pass","Behavioral · 60 min",["All 13 titles from memory","Then the three weakest, timed at 2.5 minutes each"],"All 13 titles from memory",[]),
-/* week 21 (−1) */
+LT("Negotiation rules",["Re-read the rules before offers exist, not after","Floor = current TC + ~20%. Underwrite fund offers on base — the bonus is discretionary. Never accept an exploding offer on the spot"],"Read them")],
+[ /* wk 21 · −1 */
 SS("Confirm the calendar","Pipeline · 45 min",["Confirm every scheduled loop","Re-ping the silences — one polite follow-up each"],"The confirmations",[]),
 SS("Pre-interview sweep III","Consolidation · 45 min",["Designs: every question still graded rusty, 20-minute mini each"],"One rusty design",[R.hi]),
 SS("Maintenance DSA","DSA · 45 min",["Two problems off the review queue"],"One problem off the queue",[R.nc]),
 SS("The narrative","Behavioral · 45 min",["Final 90-second “tell me about yourself” — record it, watch it back"],"Record the narrative",[]),
-SS("Ready check","Checkpoint · 60 min",["3–5 onsites on the calendar?","Resume frozen, both variants?","Tracker current, warm-ups first?","Negotiation rules re-read — never accept an exploding offer on the spot","Phase 2 starts Monday."],"The ready check",[R.haseeb])
-];
-
-/* 42 light days · 2 per week (Fri, Sun) · 10 min, one-handed */
-const LT = (t,items,m) => ({ t, h:"10 min · one-handed", items, m });
-const LIGHTS = [
-LT("Story #1 + jargon list",["Story #1 — self-serve Ray platform, 6h→15min. Bullet the STAR, then one 2.5-min rep","Start the jargon-translation list: TrueCD / AI-PES / C2C → Argo, KServe, hybrid-cloud"],"Story #1, one rep"),
-LT("Flashcards + week review",["Flashcards: pod lifecycle, QoS classes, latency numbers (L1 → network, 86.4k sec/day)","15-min week review — the worst area gets an extra session next week"],"The 15-min review"),
-LT("Story #2 + latency card",["Story #2 — SLM serving API in under a month. One 2.5-min rep","Write the latency-numbers flashcard from memory"],"Story #2, one rep"),
-LT("Re-solve cold",["Re-solve two week-1 problems cold, no notes","15-min week review"],"One problem, cold"),
-LT("Story #4 + warm-up list",["Story #4 — gateway pushback, latency vs safety. One rep","Warm-up company list: 8 names. Etsy, Squarespace, Vimeo, Justworks, Lemonade, Oscar and two more"],"Story #4, one rep"),
-LT("Flashcards + week review",["Flashcards: Ray architecture, the 7-step framework","15-min week review"],"The 15-min review"),
-LT("Story #3 + target list",["Story #3 — TrueCD 79.6→99.4%. ZERO internal jargon. One rep","Real-target company list: 20 names off the tier list"],"Story #3, one rep — jargon-free"),
-LT("Redo + review",["Redo whatever the review queue has failed","15-min week review"],"One failed problem"),
-LT("Story #8 + jargon pass",["Story #8 — EMR→Ray 6x. Mechanistic, not just the number. One rep","Jargon-list pass: anything new from this week's depth work"],"Story #8, one rep"),
-LT("Flashcards + week review",["Flashcards: KV cache math, QoS classes, the binary-search template","15-min week review — foundations end here"],"The 15-min review"),
-LT("Story #5 + dream list",["Story #5 — pgvector vs OpenSearch benchmark. One rep","Dream company list: 6 names. Tracker live"],"Story #5, one rep"),
-LT("Re-solve cold",["Re-solve two tree problems cold","15-min week review"],"One problem, cold"),
-LT("Story #6 + LinkedIn",["Story #6 — Agent-Debug. What incident motivated it? One rep","LinkedIn headline + open-to-work, recruiters-only"],"Story #6, one rep"),
-LT("Flashcards + week review",["Flashcards: probes, kube-proxy, the Serve request path","15-min week review"],"The 15-min review"),
-LT("Story #7 + jargon audit",["Story #7 — mentorship, leading the team. One rep","Jargon-list audit: is it past 10 entries yet?"],"Story #7, one rep"),
-LT("Redo + review",["Redo whatever the review queue has failed","15-min week review"],"One failed problem"),
-LT("Story #9",["Story #9 — agentic onboarding skill, the ambiguity story. One rep"],"Story #9, one rep"),
-LT("Flashcards + week review",["Flashcards: Serve autoscaling, training/serving skew","15-min week review"],"The 15-min review"),
-LT("Story #10 + tracker",["Story #10 — cost work: lifecycle policies, decommissioning. One rep","Tracker update — flag any target posting already live"],"Story #10, one rep"),
-LT("Story reps, timed",["Say stories #5, #6 and #7 aloud, timed to 2.5 minutes each","15-min week review — breadth ends here"],"One story, timed"),
-LT("PICK story #11",["Pick the failure story today. No more deferring.","A design that didn't scale, or a rollout that went sideways. An honest one, not a humblebrag"],"Pick it. Write two lines"),
-LT("Flashcards + week review",["Flashcards: quantization tradeoffs, prefill vs decode","15-min week review"],"The 15-min review"),
-LT("Story #12",["Story #12 — why leaving. Zero JPMC negativity. Pull, not push. One rep"],"Story #12, one rep"),
-LT("Redo DP + review",["Redo the DP problems the queue still has failed — DP priority","15-min week review"],"One DP problem"),
-LT("Rehearse #11",["Rehearse the failure story aloud. The first rep is the hardest — that is the point"],"Story #11, one rep"),
-LT("Flashcards + week review",["Flashcards: HPA/VPA/cluster-autoscaler, GPU node pools","15-min week review"],"The 15-min review"),
-LT("Story #13",["Story #13 — why finance. Seven years building financial systems; you want engineering to be the product. One rep"],"Story #13, one rep"),
-LT("Full story-bank pass",["All 13 story titles from memory. Any you can't name is the one to rehearse next","15-min week review — depth ends here"],"All 13 titles, from memory"),
-LT("Draft the narrative",["Draft the 90-second “tell me about yourself”. Lead with the proof points, not the chronology"],"The draft"),
-LT("Flashcards + week review",["Flashcards: all four depth tracks, mixed and shuffled","15-min week review"],"The 15-min review"),
-LT("Record the narrative",["Polish the 90-second narrative and record it. Watch it back once"],"Record it"),
-LT("Calendar the maintenance",["Write the maintenance rhythm into your calendar: the queue decides your DSA, one design write-up a fortnight, stories stay fresh","Training ends here. The pipeline starts Monday"],"The calendar entries"),
-LT("Two weakest stories",["Whichever two stories you could not name from memory. Timed reps"],"One story, timed"),
-LT("Tracker complete",["34 companies tiered, warm-ups sequenced first","Every application logged with its date"],"The tracker, current"),
-LT("Stories #3 and #4",["Timed reps. These two come up earliest in loops — impact and conflict"],"One of them, timed"),
-LT("Log the questions",["Log every question you were asked this week. They repeat across companies"],"The log"),
-LT("Story #11, timed",["The failure story, timed. It will be asked, and it is the one that goes long"],"Story #11, timed"),
-LT("Log the questions",["Log every screen question. Patterns show up by the third company"],"The log"),
-LT("The proof-point three",["Stories #1, #2 and #8, timed. These carry the ML-platform brand"],"One of them, timed"),
-LT("Negotiation rules",["Re-read the rules before offers exist, not after","Floor = current TC + ~20%. Underwrite fund offers on base — the bonus is discretionary. Never accept an exploding offer on the spot"],"Read them"),
 LT("Stories #12 and #13",["Why-leaving and why-finance, timed. The two that decide fund loops"],"One of them, timed"),
-LT("Off",["Off. Fully. Sleep is a prep activity, and Phase 2 starts tomorrow"],"Being off")
+SS("Ready check","Checkpoint · 60 min",["3–5 onsites on the calendar?","Resume frozen, both variants?","Tracker current, warm-ups first?","Negotiation rules re-read — never accept an exploding offer on the spot","Phase 2 starts Monday."],"The ready check",[R.haseeb]),
+LT("Off",["Off. Fully. Sleep is a prep activity, and Phase 2 starts tomorrow"],"Being off")]
 ];
 
-/* ── day model: 21 weeks × 7. Mon–Thu + Sat are sessions; Fri and Sun are light. */
-const WEEKS = 21, NDAYS = WEEKS*7;
+/* ── day model: 21 weeks × 7, session or light decided by the entry itself ── */
+const WEEKS = PLANWEEKS.length, NDAYS = WEEKS*7;
 const DOWN = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-const SESSION_DOW = [0,1,2,3,5];
 function stageFor(w){ return STAGES.find(s => w >= s.from && w <= s.to) || STAGES[STAGES.length-1]; }
 
 /* ── Behavioral bank (12+1) — titles and starter bullets from the plan ── */
@@ -721,41 +724,33 @@ const STORY_SEED = [
 
 /* ── Design bank — 10 ML-infra (plan order) + classics ── */
 const DESIGN_SEED = [
-{id:"m1", grp:"ml", n:1, title:"Serving platform for 50 teams", star:true, day:"W1 Thu · Block A",
+{id:"m1", grp:"ml", n:1, title:"Serving platform for 50 teams", star:true, day:"Week 4 · Mon",
  prompt:"From a BLANK page, then diff vs what you actually built. Multi-tenancy, noisy neighbour, GPU bin-packing — write the 3 hardest follow-ups and answer them.", res:[{n:"Hello Interview",u:HI},{n:"Eugene Yan",u:EY}]},
-{id:"m2", grp:"ml", n:2, title:"LLM inference service — p99 < 500ms @ 1K QPS", day:"W2 Thu · Block A",
+{id:"m2", grp:"ml", n:2, title:"LLM inference service — p99 < 500ms @ 1K QPS", day:"Week 8 · Sat",
  prompt:"Routing, continuous batching, KV memory budget, autoscaling on queue depth, and the degradation strategy when overloaded.", res:[{n:"vLLM docs",u:VLLM},{n:"Hello Interview",u:HI}]},
-{id:"m3", grp:"ml", n:3, title:"Feature store", day:"W2 Sat · Block B",
+{id:"m3", grp:"ml", n:3, title:"Feature store", day:"Week 10 · Wed",
  prompt:"Online/offline parity, point-in-time correctness, materialization.", res:[{n:"Feast docs",u:FEAST},{n:"Chip Huyen",u:CH}]},
-{id:"m4", grp:"ml", n:4, title:"Enterprise RAG + ingestion pipeline", star:true, day:"W3 Thu · Block A (40 min)",
+{id:"m4", grp:"ml", n:4, title:"Enterprise RAG + ingestion pipeline", star:true, day:"Week 13 · Wed",
  prompt:"Your S3→OpenSearch pattern generalized: chunking, embedding refresh, index swaps, eval.", res:[{n:"Eugene Yan",u:EY}]},
-{id:"m5", grp:"ml", n:5, title:"Model CI/CD rollout", day:"W3 Thu · Block A (40 min)",
+{id:"m5", grp:"ml", n:5, title:"Model CI/CD rollout", day:"Week 13 · Thu",
  prompt:"Shadow → canary → auto-rollback triggers.", res:[{n:"Evidently AI",u:EV}]},
-{id:"m6", grp:"ml", n:6, title:"Monitoring / drift pipeline", day:"W3 Fri · Block B (20-min mini)",
+{id:"m6", grp:"ml", n:6, title:"Monitoring / drift pipeline", day:"Week 14 · Thu",
  prompt:"Drift + monitoring, offline vs online eval, A/B guardrails.", res:[{n:"Evidently AI",u:EV}]},
-{id:"m7", grp:"ml", n:7, title:"Multi-region inference gateway + guardrails", star:true, day:"W3 Sat · Block B",
+{id:"m7", grp:"ml", n:7, title:"Multi-region inference gateway + guardrails", star:true, day:"Week 13 · Fri",
  prompt:"Your GenAI gateway arguments formalized: routing, failover, latency budget per hop, guardrail placement.", res:[{n:"Hello Interview",u:HI}]},
-{id:"m8", grp:"ml", n:8, title:"Batch inference — 100M items/day", star:true, day:"W4 Mon · Block A",
+{id:"m8", grp:"ml", n:8, title:"Batch inference — 100M items/day", star:true, day:"Week 15 · Mon",
  prompt:"Your Ray batch work generalized. Run it back-to-back after a coding round — stamina is the training goal.", res:[{n:"Ray Serve docs",u:RAY}]},
-{id:"m9", grp:"ml", n:9, title:"A/B experimentation platform", day:"W4 Wed · Block A (40 min)",
+{id:"m9", grp:"ml", n:9, title:"A/B experimentation platform", day:"Week 15 · Tue",
  prompt:"Coldest topic #1 — treat as a learning design.", res:[{n:"Eugene Yan",u:EY}]},
-{id:"m10", grp:"ml", n:10, title:"GPU capacity scheduler for shared inference", day:"W4 Wed · Block A (40 min)",
+{id:"m10", grp:"ml", n:10, title:"GPU capacity scheduler for shared inference", day:"Week 15 · Wed",
  prompt:"Coldest topic #2 — treat as a learning design.", res:[{n:"GPU scheduling docs",u:GPU}]},
 
-{id:"c1", grp:"cl", title:"Rate limiter", day:"W1 Tue · Block A (45 min, timed)",
+{id:"c1", grp:"cl", title:"Rate limiter", day:"Week 2 · Wed",
  prompt:"Token bucket vs sliding window, distributed counters, hot keys.", res:[{n:"Hello Interview",u:HI}]},
-{id:"c2", grp:"cl", title:"Metrics / logging pipeline", day:"W2 Tue · Block A — SHINE round",
+{id:"c2", grp:"cl", title:"Metrics / logging pipeline", day:"Week 7 · Tue — shine round",
  prompt:"Your streaming edge: Kafka, aggregation windows, hot partitions, retention tiers. Narrate exactly-once, watermarking, backpressure.", res:[{n:"Hello Interview",u:HI}]},
-{id:"c3", grp:"cl", title:"Chat / messaging system", day:"W3 Tue · Block A",
- prompt:"Fan-out, presence, ordering, delivery guarantees.", res:[{n:"Hello Interview",u:HI}]},
-
-{id:"c4", grp:"cl", title:"URL shortener", added:true, prompt:"Key generation, collision handling, redirect path, analytics fan-out.", res:[{n:"Hello Interview",u:HI}]},
-{id:"c5", grp:"cl", title:"News feed", added:true, prompt:"Fan-out on write vs read, ranking, celebrity problem, pagination.", res:[{n:"Hello Interview",u:HI}]},
-{id:"c6", grp:"cl", title:"Web crawler", added:true, prompt:"Frontier, politeness, dedup, distributed coordination, freshness.", res:[{n:"Hello Interview",u:HI}]},
-{id:"c7", grp:"cl", title:"Notification service", added:true, prompt:"Multi-channel delivery, dedup, retries, rate limits, user preferences.", res:[{n:"Hello Interview",u:HI}]},
-{id:"c8", grp:"cl", title:"Distributed cache", added:true, prompt:"Consistent hashing, eviction, replication, hot key mitigation, invalidation.", res:[{n:"Hello Interview",u:HI}]},
-{id:"c9", grp:"cl", title:"Top-K / trending", added:true, prompt:"Count-min sketch, heavy hitters, time windows, approximation tradeoffs.", res:[{n:"Hello Interview",u:HI}]},
-{id:"c10", grp:"cl", title:"Distributed job queue & scheduler", added:true, prompt:"At-least-once vs exactly-once, visibility timeouts, priority, backpressure, dead letters.", res:[{n:"Hello Interview",u:HI}]}];
+{id:"c3", grp:"cl", title:"Chat / messaging system", day:"Week 11 · Wed",
+ prompt:"Fan-out, presence, ordering, delivery guarantees.", res:[{n:"Hello Interview",u:HI}]}];
 
 /* ── Resource shelf (from prep-tracker.html) ── */
 const SHELF = [
@@ -825,8 +820,7 @@ const uid = p => p+"-"+(S.seq++)+"-"+Math.floor(Math.random()*1e4).toString(36);
    ══════════════════════════════════════════════════════════════════════ */
 function seedDay(n){
   const w = Math.floor((n-1)/7)+1, d = (n-1)%7;
-  const stage = stageFor(w), si = SESSION_DOW.indexOf(d), light = si < 0;
-  const src = light ? LIGHTS[(w-1)*2 + (d===4?0:1)] : SESSIONS[(w-1)*5 + si];
+  const stage = stageFor(w), src = PLANWEEKS[w-1][d], light = src.light === true;
   const mk = (blk, items) => (items||[]).map((it,i) => typeof it === "string"
       ? { id:"d"+n+"-"+blk+i, text:it }
       : { id:"d"+n+"-"+blk+i, text:it.t, url:it.u });
