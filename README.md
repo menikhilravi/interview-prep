@@ -36,11 +36,13 @@ Then open <http://localhost:8731>. Service workers need HTTP — opening
 
 The built site is plain static files with no build step, so any static host works.
 
-**GitHub Pages** — this repo is live at
-<https://github.com/menikhilravi/interview-prep>. Enable Pages once:
-Settings → Pages → Source *Deploy from a branch* → branch `main`, folder `/docs` → Save.
+**GitHub Pages** — already set up and live at
+**<https://menikhilravi.github.io/interview-prep/>**.
 
-The app is then served at **<https://menikhilravi.github.io/interview-prep/>**.
+Pages source here is **GitHub Actions**, so `.github/workflows/pages.yml` does the
+deploy: it uploads `docs/` as a static artifact on every push to `main`. No build
+step, no Jekyll. (With the Actions source and *no* workflow present, nothing ever
+deploys and every URL 404s — that is what the workflow exists to fix.)
 
 **Cloudflare Pages / Netlify** — both deploy from a *private* GitHub repo on their
 free tier. Same push; the source stays private and only the built site is reachable.
