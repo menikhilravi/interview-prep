@@ -36,8 +36,11 @@ Then open <http://localhost:8731>. Service workers need HTTP — opening
 
 The built site is plain static files with no build step, so any static host works.
 
-**GitHub Pages** — push this repo, then Settings → Pages → Source: *Deploy from a
-branch*, branch `main`, folder `/docs`. Free tier requires a **public** repo.
+**GitHub Pages** — this repo is live at
+<https://github.com/menikhilravi/interview-prep>. Enable Pages once:
+Settings → Pages → Source *Deploy from a branch* → branch `main`, folder `/docs` → Save.
+
+The app is then served at **<https://menikhilravi.github.io/interview-prep/>**.
 
 **Cloudflare Pages / Netlify** — both deploy from a *private* GitHub repo on their
 free tier. Same push; the source stays private and only the built site is reachable.
@@ -52,9 +55,19 @@ notes — lives in IndexedDB on the device and is never uploaded anywhere.
 
 ## Install on Android
 
-Open the site in Chrome → the in-app **Install** bar appears, or use ⋮ → *Install
+Open <https://menikhilravi.github.io/interview-prep/> in Chrome → the in-app **Install** bar appears, or use ⋮ → *Install
 app*. It gets its own icon, opens full screen with no browser bar, and works with
 no connection. Updates land on the next launch after a deploy.
 
 Back up from **Settings → Export → JSON backup**; restore with **Settings →
 Restore**. That is also how you move data between the PWA and the artifact.
+
+## Updating
+
+```
+python3 tools/build-pwa.py && git add -A && git commit -m "..." && git push
+```
+
+Pages redeploys in about a minute. The installed app picks the new version up on
+its next launch — the service worker serves the cached copy first, then refreshes
+in the background, so it never blocks on the network.
