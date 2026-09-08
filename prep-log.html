@@ -865,6 +865,7 @@ const PHASES = [
    ══════════════════════════════════════════════════════════════════════ */
 const INTERVALS = [1,3,7,21,45];
 const REVIEW_CAP = 3;
+const DEVICE_LOCAL = false;   // build-pwa.py sets this true — the PWA stores per-device
 const DEFAULT_START = "2026-09-07";       // Mon — Day 1 of 28. Editable in Settings.
 
 const S = {
@@ -1130,6 +1131,12 @@ async function reconcile(){
    ANALYTICS
    ══════════════════════════════════════════════════════════════════════ */
 function streakFrom(end){ let s=0,n=end; while(n>=1 && isDone(dayState(n))){ s++; n--; } return s; }
+function hasLoggedData(){
+  return Object.keys(S.checks).length > 0 || Object.keys(S.grades).length > 0 ||
+         Object.keys(S.queue).length > 0 || Object.keys(S.dayOverrides).length > 0 ||
+         Object.values(S.stories).some(r => r && (r.reps || r.notes != null)) ||
+         Object.values(S.designs).some(r => r && (r.attempts || r.gaps));
+}
 function currentStreak(){ const c = Math.min(NDAYS, curDay()); return isDone(dayState(c)) ? streakFrom(c) : streakFrom(c-1); }
 function bestStreak(){ let best=0, run=0; for(let n=1;n<=NDAYS;n++){ if(isDone(dayState(n))){ run++; if(run>best) best=run; } else run=0; } return best; }
 
@@ -1463,6 +1470,9 @@ function renderToday(){
   const due = dueReviews(), shown = due.slice(0, REVIEW_CAP), rest = due.length - shown.length;
   const off = dayDiff(S.settings.startDate, todayISO());
   let pre = "";
+  if(DEVICE_LOCAL && !S.settings.primary && hasLoggedData())
+    pre += '<div class="banner w"><b>This isn\u2019t your main device.</b> Anything you tick here stays here — it never reaches your phone. '+
+           'Mark this device as your log in Settings, or export before you close it.</div>';
   if(off < 0) pre = '<div class="banner i">Phase 1 starts <b>'+fmtDate(S.settings.startDate)+"</b> — "+(-off)+" day"+(off===-1?"":"s")+" out. You're looking ahead at Day "+n+".</div>";
   else if(off > NDAYS-1) pre = '<div class="banner g">Phase 1 closed '+fmtDate(addDays(S.settings.startDate,NDAYS-1))+". Bridge mode: 3 DSA/wk off the review queue, a design write-up per fortnight, stories kept fresh.</div>";
 
@@ -1762,6 +1772,9 @@ function renderSettings(){
     '<h1 style="font-size:25px;font-weight:800;font-variation-settings:\'wdth\' 118;margin-bottom:14px">Settings</h1>'+
     (mode==="local"?'<div class="banner w"><b>Local-only storage.</b> '+esc(line)+" Export a backup before you close this tab.</div>":"")+
     '<div class="card"><label class="fl">Storage</label><p class="hint">'+esc(line)+"</p>"+
+      (DEVICE_LOCAL ? '<p class="hint" style="margin-top:8px">Each device keeps its own log — they do not sync. Pick one that counts.</p>'+
+        '<button class="btn sm" data-act="primary" style="width:100%;margin-top:10px">'+
+        (S.settings.primary ? "\u2713 This device is my log" : "Make this device my log")+"</button>" : "")+
       '<div class="lsub" style="margin-top:10px"><span>'+d.complete+' complete</span><span class="sep">·</span><span>'+d.fallback+
       ' fallback</span><span class="sep">·</span><span>'+Object.keys(S.queue).length+' queued</span><span class="sep">·</span><span>'+
       Object.keys(S.dayOverrides).length+" days edited</span></div></div>"+
@@ -1879,6 +1892,7 @@ function exportText(){
   L.push("ML PLATFORM PREP LOG — FULL EXPORT");
   L.push("generated "+t+"  ·  storage: "+mode);
   L.push("Day 1 = "+S.settings.startDate+"  ·  today = Day "+curDay()+" of "+NDAYS+"  ("+WEEKS+" weeks)");
+  if(DEVICE_LOCAL) L.push("device: "+(S.settings.primary?"THIS IS THE MAIN LOG":"secondary device — may be behind the main one"));
   L.push("progress: "+d.total+"/"+NDAYS+" days done ("+d.complete+" complete, "+d.fallback+" fallback)");
   L.push("streak: "+currentStreak()+" (best "+bestStreak()+")  ·  a fallback day holds the streak");
   L.push("grades logged: "+out.total+" ("+out.clean+" clean, "+out.struggled+" struggled, "+out.failed+" failed)"+(out.rate!=null?"  ·  clean rate "+out.rate+"%":""));
@@ -2162,6 +2176,7 @@ document.addEventListener("click", ev => {
       sheet = null; viewDay = null; storyOpen = null; designOpen = null;
       renderSheet(); render(); return;
     }
+    case "primary": S.settings.primary = !S.settings.primary; markDirty("plan"); render(); return;
     case "reset-open": sheet = { kind:"reset", text:"" }; renderSheet(); return;
     case "reset-do": {
       if(sheet.text !== "RESET") return;

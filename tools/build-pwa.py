@@ -159,6 +159,9 @@ sub('(mode==="local"?\'<div class="banner w"><b>Local-only storage.</b> \'+esc(l
     '(mode==="none"?\'<div class="banner w"><b>No storage.</b> \'+esc(line)+"</div>":"")', label="settings banner")
 sub('      if(mode === "local"){ try{ localStorage.removeItem(LS_KEY); }catch(e){} }\n', "", label="reset localStorage")
 
+# the PWA is the device-local build; that unlocks the main-device guard
+sub("const DEVICE_LOCAL = false;", "const DEVICE_LOCAL = true;", label="device-local flag")
+
 # ── 4. PWA runtime: service worker, install prompt ───────────────────────
 sub("</script>", '''
 /* ══════════════════════════════════════════════════════════════════════════
