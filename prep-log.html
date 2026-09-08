@@ -5,53 +5,53 @@
 <style>
 /* ── tokens: complete light palette on bare :root ─────────────────────── */
 :root{
-  --ground:#EFE0CB; --surface:#FCF4E6; --surface-2:#F4E7D3; --surface-3:#E3D4BB; --sunken:#E0CEB4;
-  --ink:#31291D; --ink-soft:#615645; --ink-faint:#766855;
-  --line:#E7D7C1; --line-strong:#D0BCA2; --grid:#F1E6D1;
-  --run:#005184;   --run-bg:#BAD8F4;  --run-edge:#8EBFE9;
-  --done:#007A5E;  --done-bg:#D1FDEC; --done-edge:#9FE7CD;
-  --fall:#9D5800;  --fall-bg:#FFEDDF; --fall-edge:#FCCA9F;
-  --alert:#940027; --alert-bg:#F4C8C7; --alert-edge:#E8A4A5;
+  --ground:#D2DCF0; --surface:#FFF9F2; --surface-2:#F7E7D5; --surface-3:#EAD6BD; --sunken:#C1CDE5;
+  --ink:#3B3224; --ink-soft:#6A5D4B; --ink-faint:#7D6E5A;
+  --line:#E4D2BE; --line-strong:#C7AF93; --grid:#FBEEDF;
+  --run:#005184;   --run-bg:#B9D8F5;  --run-edge:#89BDEB;
+  --done:#007A5E;  --done-bg:#D1FEEC; --done-edge:#9BE7CC;
+  --fall:#9D5800;  --fall-bg:#FFEDDF; --fall-edge:#FDC79A;
+  --alert:#940027; --alert-bg:#F4C7C7; --alert-edge:#E8A1A2;
   --ord1:#6da7ec; --ord2:#3987e5; --ord3:#256abf; --ord4:#184f95; --ord5:#0d366b;
-  --onfill:#EFE0CB;
+  --onfill:#D2DCF0;
   --e1:0 1px 2px rgba(12,18,27,.06);
   --e2:0 2px 4px rgba(12,18,27,.06),0 8px 20px rgba(12,18,27,.07);
   --e3:0 8px 16px rgba(12,18,27,.10),0 24px 48px rgba(12,18,27,.12);
-  --ringtrack:#E7D7C1;
+  --ringtrack:#E4D2BE;
   --disp:'Archivo',ui-sans-serif,system-ui,-apple-system,sans-serif;
   --body:'Public Sans',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
   --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
   --r-s:8px; --r-m:12px; --r-l:16px; --r-xl:22px;
 }
 @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
-  --ground:#261400; --surface:#301D03; --surface-2:#3B2509; --surface-3:#463212; --sunken:#150900;
-  --ink:#E3DAC8; --ink-soft:#B0A491; --ink-faint:#998B78;
-  --line:#3E290D; --line-strong:#533B1F; --grid:#2C1902;
-  --run:#4196D6;   --run-bg:#0B263A;  --run-edge:#073C5F;
-  --done:#6CE0B4;  --done-bg:#1E4334; --done-edge:#175F47;
-  --fall:#CFB447;  --fall-bg:#423A1A; --fall-edge:#5F5013;
-  --alert:#D47176; --alert-bg:#391A1B; --alert-edge:#5C262A;
+  --ground:#050B18; --surface:#3E2A0F; --surface-2:#513A1C; --surface-3:#654B29; --sunken:#01030A;
+  --ink:#E3D9C6; --ink-soft:#AFA18C; --ink-faint:#A89881;
+  --line:#584328; --line-strong:#7B6242; --grid:#48351D;
+  --run:#50A4E5;   --run-bg:#173349;  --run-edge:#164C72;
+  --done:#6CE0B4;  --done-bg:#2F5646; --done-edge:#2B755B;
+  --fall:#CFB447;  --fall-bg:#4C4321; --fall-edge:#6B5B19;
+  --alert:#E48084; --alert-bg:#482627; --alert-edge:#6F3337;
   --ord1:#cde2fb; --ord2:#9ec5f4; --ord3:#6da7ec; --ord4:#3987e5; --ord5:#256abf;
-  --onfill:#261400;
+  --onfill:#050B18;
   --e1:0 1px 2px rgba(0,0,0,.5);
   --e2:0 2px 4px rgba(0,0,0,.45),0 8px 20px rgba(0,0,0,.4);
   --e3:0 8px 16px rgba(0,0,0,.5),0 24px 48px rgba(0,0,0,.55);
-  --ringtrack:#3E290D;
+  --ringtrack:#584328;
 }}
 :root[data-theme="dark"]{
-  --ground:#261400; --surface:#301D03; --surface-2:#3B2509; --surface-3:#463212; --sunken:#150900;
-  --ink:#E3DAC8; --ink-soft:#B0A491; --ink-faint:#998B78;
-  --line:#3E290D; --line-strong:#533B1F; --grid:#2C1902;
-  --run:#4196D6;   --run-bg:#0B263A;  --run-edge:#073C5F;
-  --done:#6CE0B4;  --done-bg:#1E4334; --done-edge:#175F47;
-  --fall:#CFB447;  --fall-bg:#423A1A; --fall-edge:#5F5013;
-  --alert:#D47176; --alert-bg:#391A1B; --alert-edge:#5C262A;
+  --ground:#050B18; --surface:#3E2A0F; --surface-2:#513A1C; --surface-3:#654B29; --sunken:#01030A;
+  --ink:#E3D9C6; --ink-soft:#AFA18C; --ink-faint:#A89881;
+  --line:#584328; --line-strong:#7B6242; --grid:#48351D;
+  --run:#50A4E5;   --run-bg:#173349;  --run-edge:#164C72;
+  --done:#6CE0B4;  --done-bg:#2F5646; --done-edge:#2B755B;
+  --fall:#CFB447;  --fall-bg:#4C4321; --fall-edge:#6B5B19;
+  --alert:#E48084; --alert-bg:#482627; --alert-edge:#6F3337;
   --ord1:#cde2fb; --ord2:#9ec5f4; --ord3:#6da7ec; --ord4:#3987e5; --ord5:#256abf;
-  --onfill:#261400;
+  --onfill:#050B18;
   --e1:0 1px 2px rgba(0,0,0,.5);
   --e2:0 2px 4px rgba(0,0,0,.45),0 8px 20px rgba(0,0,0,.4);
   --e3:0 8px 16px rgba(0,0,0,.5),0 24px 48px rgba(0,0,0,.55);
-  --ringtrack:#3E290D;
+  --ringtrack:#584328;
 }
 *{box-sizing:border-box}
 body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;
@@ -133,8 +133,9 @@ h1,h2,h3,h4{margin:0;font-family:var(--disp);font-variation-settings:'wdth' 112;
 .herostats{display:flex;gap:13px;margin-top:9px;flex-wrap:wrap}
 .hs{min-width:0}
 .hs b{display:block;font-family:var(--mono);font-size:15px;font-weight:700;line-height:1.1;
-  font-variant-numeric:tabular-nums}
-.hs span{display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.11em;text-transform:uppercase;
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.hs b span,.tile b span{display:inline}
+.hs>span{display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.11em;text-transform:uppercase;
   color:var(--ink-faint);margin-top:2px}
 .hs.flame b{color:var(--fall)}
 
@@ -281,7 +282,7 @@ h1,h2,h3,h4{margin:0;font-family:var(--disp);font-variation-settings:'wdth' 112;
 .tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:12px;box-shadow:var(--e1)}
 .tile b{display:block;font-family:var(--mono);font-size:26px;font-weight:700;line-height:1;letter-spacing:-.02em;
   font-variant-numeric:tabular-nums}
-.tile span{display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;
+.tile>span{display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;
   color:var(--ink-faint);margin-top:6px}
 .tile em{font-style:normal;font-family:var(--mono);font-size:10px;color:var(--ink-faint);display:block;margin-top:3px}
 .tile.a b{color:var(--done)} .tile.b b{color:var(--fall)} .tile.c b{color:var(--run)} .tile.d b{color:var(--ink)}
@@ -433,14 +434,15 @@ label.fl{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.13e
    five months of work visibly change temperature. Ambient only, never on a
    data mark: the status palette (run/done/fall/alert) stays untouched.
    ══════════════════════════════════════════════════════════════════════ */
-:root{ --stage:#5B8DEF; --edge:rgba(255,255,255,.55); --grain:.020; --glow:.16; }
-@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){ --edge:rgba(255,255,255,.055); --grain:.035; --glow:.22; } }
-:root[data-theme="dark"]{ --edge:rgba(255,255,255,.055); --grain:.035; --glow:.22; }
+:root{ --stage:#5B8DEF; --edge:rgba(255,255,255,.55); --grain:.020; --glow:.26; }
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){ --edge:rgba(255,255,255,.075); --grain:.035; --glow:.38; } }
+:root[data-theme="dark"]{ --edge:rgba(255,255,255,.075); --grain:.035; --glow:.38; }
 
-body::before{content:"";position:fixed;inset:0 0 auto;height:min(52vh,420px);z-index:0;pointer-events:none;
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
   background:
-    radial-gradient(58% 100% at 12% 0%, color-mix(in srgb,var(--stage) calc(var(--glow)*100%),transparent), transparent 68%),
-    radial-gradient(46% 88% at 96% 6%, color-mix(in srgb,var(--stage) calc(var(--glow)*62%),transparent), transparent 70%);
+    radial-gradient(70% 46% at 10% 0%, color-mix(in srgb,var(--stage) calc(var(--glow)*100%),transparent), transparent 66%),
+    radial-gradient(55% 38% at 98% 12%, color-mix(in srgb,var(--stage) calc(var(--glow)*70%),transparent), transparent 68%),
+    radial-gradient(90% 40% at 50% 100%, color-mix(in srgb,var(--stage) calc(var(--glow)*45%),transparent), transparent 72%);
   animation:drift 22s ease-in-out infinite alternate;will-change:transform}
 body::after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:var(--grain);
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:200px 200px;mix-blend-mode:overlay}
@@ -453,8 +455,8 @@ body::after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .hero,.chart,.card,.block,.tile,.lrow,.pbtn,.gwrap,.mvd,.sheet,.celecard,.empty{
   box-shadow:var(--e1), inset 0 1px 0 var(--edge)}
 .hero,.chart,.tile{box-shadow:var(--e2), inset 0 1px 0 var(--edge)}
-.tile,.chart,.card,.block,.gwrap{background-image:linear-gradient(178deg,
-  color-mix(in srgb,var(--stage) 5%,transparent),transparent 46%)}
+.tile,.chart,.card,.block,.gwrap,.lrow{background-image:linear-gradient(172deg,
+  color-mix(in srgb,var(--stage) 9%,transparent),transparent 52%)}
 
 /* ── the hero gauge ─────────────────────────────────────────────────────── */
 .hero{padding:16px 15px}
