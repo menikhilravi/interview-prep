@@ -5,53 +5,53 @@
 <style>
 /* ── tokens: complete light palette on bare :root ─────────────────────── */
 :root{
-  --ground:#D2DCF0; --surface:#FFF9F2; --surface-2:#F7E7D5; --surface-3:#EAD6BD; --sunken:#C1CDE5;
-  --ink:#3B3224; --ink-soft:#6A5D4B; --ink-faint:#7D6E5A;
-  --line:#E4D2BE; --line-strong:#C7AF93; --grid:#FBEEDF;
-  --run:#005184;   --run-bg:#B9D8F5;  --run-edge:#89BDEB;
-  --done:#007A5E;  --done-bg:#D1FEEC; --done-edge:#9BE7CC;
-  --fall:#9D5800;  --fall-bg:#FFEDDF; --fall-edge:#FDC79A;
-  --alert:#940027; --alert-bg:#F4C7C7; --alert-edge:#E8A1A2;
+  --ground:#D6DCE4; --surface:#F7FAFE; --surface-2:#E5EAF0; --surface-3:#D3DAE2; --sunken:#C6CED6;
+  --ink:#2B343E; --ink-soft:#54616F; --ink-faint:#637383;
+  --line:#D0D6DD; --line-strong:#ACB5BE; --grid:#ECF1F5;
+  --run:#005C9B;   --run-bg:#BFDDFA;  --run-edge:#88BFF3;
+  --done:#04815E;  --done-bg:#E3FFF2; --done-edge:#98EBC8;
+  --fall:#A16409;  --fall-bg:#FFF9F2; --fall-edge:#FFCF9D;
+  --alert:#860F27; --alert-bg:#FACCCC; --alert-edge:#F0A0A2;
   --ord1:#6da7ec; --ord2:#3987e5; --ord3:#256abf; --ord4:#184f95; --ord5:#0d366b;
-  --onfill:#D2DCF0;
+  --onfill:#D6DCE4;
   --e1:0 1px 2px rgba(12,18,27,.06);
   --e2:0 2px 4px rgba(12,18,27,.06),0 8px 20px rgba(12,18,27,.07);
   --e3:0 8px 16px rgba(12,18,27,.10),0 24px 48px rgba(12,18,27,.12);
-  --ringtrack:#E4D2BE;
+  --ringtrack:#D0D6DD;
   --disp:'Archivo',ui-sans-serif,system-ui,-apple-system,sans-serif;
   --body:'Public Sans',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
   --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
   --r-s:8px; --r-m:12px; --r-l:16px; --r-xl:22px;
 }
 @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
-  --ground:#050B18; --surface:#3E2A0F; --surface-2:#513A1C; --surface-3:#654B29; --sunken:#01030A;
-  --ink:#E3D9C6; --ink-soft:#AFA18C; --ink-faint:#A89881;
-  --line:#584328; --line-strong:#7B6242; --grid:#48351D;
-  --run:#50A4E5;   --run-bg:#173349;  --run-edge:#164C72;
-  --done:#6CE0B4;  --done-bg:#2F5646; --done-edge:#2B755B;
-  --fall:#CFB447;  --fall-bg:#4C4321; --fall-edge:#6B5B19;
-  --alert:#E48084; --alert-bg:#482627; --alert-edge:#6F3337;
+  --ground:#0F0F0F; --surface:#222222; --surface-2:#2F2F2F; --surface-3:#3D3D3D; --sunken:#050505;
+  --ink:#CDD3DA; --ink-soft:#9099A1; --ink-faint:#838D98;
+  --line:#343434; --line-strong:#525252; --grid:#2A2A2A;
+  --run:#2AA1FE;   --run-bg:#1B344B;  --run-edge:#184F7D;
+  --done:#35CE95;  --done-bg:#1E4433; --done-edge:#096646;
+  --fall:#ECC74A;  --fall-bg:#453A19; --fall-edge:#685300;
+  --alert:#E65D64; --alert-bg:#391919; --alert-edge:#662428;
   --ord1:#cde2fb; --ord2:#9ec5f4; --ord3:#6da7ec; --ord4:#3987e5; --ord5:#256abf;
-  --onfill:#050B18;
+  --onfill:#0F0F0F;
   --e1:0 1px 2px rgba(0,0,0,.5);
   --e2:0 2px 4px rgba(0,0,0,.45),0 8px 20px rgba(0,0,0,.4);
   --e3:0 8px 16px rgba(0,0,0,.5),0 24px 48px rgba(0,0,0,.55);
-  --ringtrack:#584328;
+  --ringtrack:#343434;
 }}
 :root[data-theme="dark"]{
-  --ground:#050B18; --surface:#3E2A0F; --surface-2:#513A1C; --surface-3:#654B29; --sunken:#01030A;
-  --ink:#E3D9C6; --ink-soft:#AFA18C; --ink-faint:#A89881;
-  --line:#584328; --line-strong:#7B6242; --grid:#48351D;
-  --run:#50A4E5;   --run-bg:#173349;  --run-edge:#164C72;
-  --done:#6CE0B4;  --done-bg:#2F5646; --done-edge:#2B755B;
-  --fall:#CFB447;  --fall-bg:#4C4321; --fall-edge:#6B5B19;
-  --alert:#E48084; --alert-bg:#482627; --alert-edge:#6F3337;
+  --ground:#0F0F0F; --surface:#222222; --surface-2:#2F2F2F; --surface-3:#3D3D3D; --sunken:#050505;
+  --ink:#CDD3DA; --ink-soft:#9099A1; --ink-faint:#838D98;
+  --line:#343434; --line-strong:#525252; --grid:#2A2A2A;
+  --run:#2AA1FE;   --run-bg:#1B344B;  --run-edge:#184F7D;
+  --done:#35CE95;  --done-bg:#1E4433; --done-edge:#096646;
+  --fall:#ECC74A;  --fall-bg:#453A19; --fall-edge:#685300;
+  --alert:#E65D64; --alert-bg:#391919; --alert-edge:#662428;
   --ord1:#cde2fb; --ord2:#9ec5f4; --ord3:#6da7ec; --ord4:#3987e5; --ord5:#256abf;
-  --onfill:#050B18;
+  --onfill:#0F0F0F;
   --e1:0 1px 2px rgba(0,0,0,.5);
   --e2:0 2px 4px rgba(0,0,0,.45),0 8px 20px rgba(0,0,0,.4);
   --e3:0 8px 16px rgba(0,0,0,.5),0 24px 48px rgba(0,0,0,.55);
-  --ringtrack:#584328;
+  --ringtrack:#343434;
 }
 *{box-sizing:border-box}
 body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;
@@ -455,8 +455,10 @@ body::after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .hero,.chart,.card,.block,.tile,.lrow,.pbtn,.gwrap,.mvd,.sheet,.celecard,.empty{
   box-shadow:var(--e1), inset 0 1px 0 var(--edge)}
 .hero,.chart,.tile{box-shadow:var(--e2), inset 0 1px 0 var(--edge)}
+/* Carbon keeps its cards neutral on purpose — colour lives in the ambient ground
+   and the accents, not in the surfaces. Keep this tint low. */
 .tile,.chart,.card,.block,.gwrap,.lrow{background-image:linear-gradient(172deg,
-  color-mix(in srgb,var(--stage) 9%,transparent),transparent 52%)}
+  color-mix(in srgb,var(--stage) 4%,transparent),transparent 46%)}
 
 /* ── the hero gauge ─────────────────────────────────────────────────────── */
 .hero{padding:16px 15px}
