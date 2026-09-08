@@ -141,8 +141,11 @@ sub(old_offer, '''async function offerFile(name, text, title){
 ''', label="offerFile")
 
 # ── 3. mode branches + storage copy ──────────────────────────────────────
+# The artifact says "saved" and means "synced to your Claude account". The PWA
+# stores in IndexedDB, which is per-device and syncs nowhere — so it must never
+# say the same word unqualified, or the two look identical and imply sync.
 sub('const save = mode==="init" ? ["","connecting"] : mode==="local" ? ["busy","this device only"] : [dirty.size?"busy":"ok", dirty.size?"saving":"saved"];',
-    'const save = mode==="init" ? ["","opening"] : mode==="none" ? ["bad","storage unavailable"] : [dirty.size?"busy":"ok", dirty.size?"saving":"saved"];',
+    'const save = mode==="init" ? ["","opening"] : mode==="none" ? ["bad","no storage"] : [dirty.size?"busy":"ok", dirty.size?"saving":"this device"];',
     label="topbar save")
 # render() has no mode branch — topbar() recomputes the save chip on every render.
 sub('''  const line = mode==="db" ? "Saved to your Claude account. The same link on any signed-in device shows the same data."
