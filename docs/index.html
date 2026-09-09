@@ -901,6 +901,13 @@ const PHASES = [
 const INTERVALS = [1,3,7,21,45];
 const REVIEW_CAP = 3;
 const DEVICE_LOCAL = true;   // build-pwa.py sets this true — the PWA stores per-device
+const SB_LIB = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js";
+const SYNC_CFG = "prep-sync-cfg";
+const SYNC = { sb:null, user:null, status:"off", err:null, last:null, busy:false, t:null };
+let localAt = {};              // per-doc timestamp of what this device last stored
+let syncForm = { url:"", key:"", email:"" };
+function syncCfg(){ try{ return JSON.parse(localStorage.getItem(SYNC_CFG) || "null"); }catch(e){ return null; } }
+function syncSave(c){ try{ localStorage.setItem(SYNC_CFG, JSON.stringify(c)); }catch(e){} }
 const DEFAULT_START = "2026-09-07";       // Mon — Day 1 of 28. Editable in Settings.
 
 const S = {
@@ -1116,8 +1123,11 @@ async function flush(){
   const names = [...dirty]; dirty.clear();
   if(mode !== "idb" || !idb){ names.forEach(n => dirty.add(n)); return; }
   try{
-    await Promise.all(names.map(n => idbPut(idb, n, Object.assign({ v:1, at:new Date().toISOString() }, DOCS[n]()))));
-    setSave(dirty.size ? "busy" : "ok", dirty.size ? "saving" : "saved");
+    const at = new Date().toISOString();
+    await Promise.all(names.map(n => idbPut(idb, n, Object.assign({ v:1, at:at }, DOCS[n]()))));
+    names.forEach(n => localAt[n] = at);
+    setSave(dirty.size ? "busy" : "ok", dirty.size ? "saving" : "this device");
+    if(SYNC.status === "on" && !dirty.size){ clearTimeout(SYNC.t); SYNC.t = setTimeout(syncRun, 1200); }
   }catch(err){
     names.forEach(n => dirty.add(n));
     setSave("bad", (err && err.name === "QuotaExceededError") ? "storage full" : "not saved");
@@ -1141,9 +1151,9 @@ async function connect(){
   try{
     idb = await idbOpen(); mode = "idb";
     const vals = await Promise.all(DOC_NAMES.map(n => idbGet(idb, n)));
-    vals.forEach((v,i) => { if(v) absorb(DOC_NAMES[i], v); });
-    setSave(dirty.size ? "busy" : "ok", dirty.size ? "saving" : "saved");
-  }catch(e){ mode = "none"; setSave("bad","storage unavailable"); }
+    vals.forEach((v,i) => { if(v){ absorb(DOC_NAMES[i], v); localAt[DOC_NAMES[i]] = v.at || ""; } });
+    setSave(dirty.size ? "busy" : "ok", dirty.size ? "saving" : "this device");
+  }catch(e){ mode = "none"; setSave("bad","no storage"); }
   // ask the browser not to evict this data under storage pressure
   try{
     if(navigator.storage && navigator.storage.persist)
@@ -1151,15 +1161,17 @@ async function connect(){
   }catch(e){}
   render();
   if(dirty.size) flush();
+  syncInit();
 }
 async function reconcile(){
   if(mode !== "idb" || !idb || dirty.size) return;
   try{
     const vals = await Promise.all(DOC_NAMES.map(n => idbGet(idb, n)));
     touched.clear();
-    vals.forEach((v,i) => { if(v) absorb(DOC_NAMES[i], v); });
+    vals.forEach((v,i) => { if(v){ absorb(DOC_NAMES[i], v); localAt[DOC_NAMES[i]] = v.at || ""; } });
     render();
   }catch(e){}
+  syncRun();
 }
 
 
@@ -1337,6 +1349,83 @@ function chartCard(key, title, cap, body, legend, cols, rows){
     (rows && rows.length ? '<button data-act="ctable" data-k="'+attr(key)+'" style="font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);border:1px solid var(--line);border-radius:5px;padding:4px 7px;flex:none">'+(tableOpen[key]?"chart":"table")+"</button>" : "")+
     "</div>"+
     (tableOpen[key] ? "" : body)+(legend||"")+tableFor(key, cols||[], rows||[])+"</section>";
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SYNC — optional, PWA only. IndexedDB stays the source of truth on each
+   device; Supabase is a mirror. Merge is per-document last-write-wins on the
+   stored timestamp, which is right for one person using one device at a time.
+   ══════════════════════════════════════════════════════════════════════ */
+function loadSB(){
+  if(window.supabase) return Promise.resolve(window.supabase);
+  return new Promise((res,rej)=>{
+    const el = document.createElement("script");
+    el.src = SB_LIB; el.async = true;
+    el.onload = () => res(window.supabase);
+    el.onerror = () => rej(new Error("could not load the Supabase library"));
+    document.head.appendChild(el);
+  });
+}
+function syncState(st, err){ SYNC.status = st; SYNC.err = err || null; render(); }
+async function syncInit(){
+  if(!DEVICE_LOCAL) return;
+  const c = syncCfg();
+  if(!c || !c.url || !c.key){ SYNC.status = "off"; return; }
+  try{
+    const lib = await loadSB();
+    SYNC.sb = lib.createClient(c.url, c.key, { auth:{ persistSession:true, detectSessionInUrl:true, autoRefreshToken:true } });
+    const { data } = await SYNC.sb.auth.getSession();
+    SYNC.user = data && data.session ? data.session.user : null;
+    SYNC.sb.auth.onAuthStateChange((_e, sess) => {
+      SYNC.user = sess ? sess.user : null;
+      SYNC.status = SYNC.user ? "on" : "signedout";
+      render();
+      if(SYNC.user) syncRun();
+    });
+    syncState(SYNC.user ? "on" : "signedout");
+    if(SYNC.user) syncRun();
+  }catch(e){ syncState("error", (e && e.message) || String(e)); }
+}
+async function syncRun(){
+  if(SYNC.status !== "on" || SYNC.busy || !navigator.onLine) return;
+  SYNC.busy = true; render();
+  try{
+    if(dirty.size) await flush();          // never let a pull clobber unsaved local work
+    await syncPush();
+    await syncPull();
+    SYNC.last = new Date().toISOString(); SYNC.err = null;
+  }catch(e){ SYNC.err = (e && e.message) || String(e); }
+  SYNC.busy = false; render();
+}
+async function syncPush(){
+  const now = new Date().toISOString();
+  const rows = DOC_NAMES.map(n => ({ user_id:SYNC.user.id, doc:n, data:DOCS[n](), updated_at:now }));
+  const { error } = await SYNC.sb.from("prep_state").upsert(rows, { onConflict:"user_id,doc" });
+  if(error) throw new Error(error.message);
+  DOC_NAMES.forEach(n => localAt[n] = now);
+}
+async function syncPull(){
+  const { data, error } = await SYNC.sb.from("prep_state").select("doc,data,updated_at").eq("user_id", SYNC.user.id);
+  if(error) throw new Error(error.message);
+  let changed = false;
+  (data || []).forEach(r => {
+    if(DOC_NAMES.indexOf(r.doc) < 0) return;
+    if(!localAt[r.doc] || r.updated_at > localAt[r.doc]){
+      touched.delete(r.doc);
+      absorb(r.doc, r.data);
+      localAt[r.doc] = r.updated_at;
+      if(typeof idb !== "undefined" && idb) idbPut(idb, r.doc, Object.assign({ v:1, at:r.updated_at }, r.data)).catch(()=>{});
+      changed = true;
+    }
+  });
+  if(changed) render();
+}
+async function syncSignIn(email){
+  if(!SYNC.sb) return;
+  syncState("sending");
+  const { error } = await SYNC.sb.auth.signInWithOtp({ email,
+    options:{ emailRedirectTo: location.origin + location.pathname } });
+  syncState(error ? "error" : "sent", error && error.message);
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -1798,6 +1887,33 @@ const COMP = [["Big tech NYC","$350–500K","RSU-heavy"],["Hedge funds (central 
 const RUNWAY = [["−5","Warm-network blast (15–25 people) + reply to every recruiter who ever pinged you"],["−4","Cold applications + 5–10 personalized hiring-manager notes"],
 ["−3","Recruiter screens & phone screens begin (30–45 min, after hours)"],["−2","Push onsite scheduling into leave weeks 1–3; warm-ups earliest"],["−1","Confirm calendar; re-ping silences"]];
 
+function syncCard(){
+  const c = syncCfg(), st = SYNC.status;
+  const head = '<div class="card"><label class="fl">Sync across devices</label>';
+  if(!c || !c.url || !c.key)
+    return head+'<p class="hint" style="margin-bottom:10px">Paste your Supabase project URL and its <b>anon</b> key. They stay on this device — nothing goes in the repo. The anon key is safe to hold; your data is protected by sign-in and row-level security.</p>'+
+      '<label class="fl" for="su">Project URL</label><input type="text" id="su" data-act="syncurl" placeholder="https://xxxx.supabase.co" value="'+attr(syncForm.url)+'">'+
+      '<div style="margin-top:9px"><label class="fl" for="sk">Anon key</label><input type="text" id="sk" data-act="synckey" placeholder="eyJhbGci…" value="'+attr(syncForm.key)+'"></div>'+
+      '<button class="btn pri" data-act="sync-save" style="margin-top:11px">Connect</button></div>';
+  if(st === "error")
+    return head+'<div class="banner w" style="margin:0 0 10px"><b>Sync error.</b> '+esc(SYNC.err||"unknown")+"</div>"+
+      '<div class="btnrow"><button class="btn" data-act="sync-now">Try again</button><button class="btn warn" data-act="sync-forget">Disconnect</button></div></div>';
+  if(st === "sent")
+    return head+'<p class="hint">Check your email and tap the link. It opens this app signed in — you can close this tab.</p>'+
+      '<div class="btnrow" style="margin-top:11px"><button class="btn" data-act="sync-signout">Use a different address</button></div></div>';
+  if(st === "sending") return head+'<p class="hint">Sending the link…</p></div>';
+  if(st !== "on")
+    return head+'<p class="hint" style="margin-bottom:10px">Sign in to sync. No password — you get a one-time link by email, and the session sticks on this device.</p>'+
+      '<label class="fl" for="se">Email</label><input type="text" id="se" data-act="syncemail" inputmode="email" autocapitalize="none" placeholder="you@example.com" value="'+attr(syncForm.email)+'">'+
+      '<button class="btn pri" data-act="sync-signin" style="margin-top:11px">Email me a link</button>'+
+      '<button class="btn sm warn" data-act="sync-forget" style="width:100%;margin-top:8px">Disconnect this project</button></div>';
+  return head+'<p class="hint">Signed in as <b>'+esc((SYNC.user&&SYNC.user.email)||"—")+"</b>. "+
+      (SYNC.busy ? "Syncing now…" : SYNC.last ? "Last synced "+relDay(SYNC.last.slice(0,10))+" at "+SYNC.last.slice(11,16)+" UTC." : "Not synced yet.")+"</p>"+
+      (SYNC.err?'<p class="hint" style="color:var(--alert);margin-top:7px">'+esc(SYNC.err)+"</p>":"")+
+      '<div class="btnrow" style="margin-top:11px"><button class="btn" data-act="sync-now">Sync now</button>'+
+      '<button class="btn" data-act="sync-signout">Sign out</button></div>'+
+      '<p class="hint" style="margin-top:9px">Each device keeps its own offline copy and mirrors it here. If you edit two devices while offline, the one that syncs last wins for that section.</p></div>';
+}
 function renderSettings(){
   const d = daysDone();
   const line = mode==="idb"
@@ -1818,6 +1934,7 @@ function renderSettings(){
     '<div class="card"><label class="fl" for="sd">Day 1 of '+NDAYS+'</label>'+
       '<input type="date" id="sd" data-act="startdate" value="'+attr(S.settings.startDate)+'">'+
       '<p class="hint" style="margin-top:9px">The plan’s weeks run Mon–Sun. Today is '+(dayDiff(S.settings.startDate,todayISO())+1>NDAYS?"past the end":"Day "+curDay()+" of "+NDAYS)+".</p></div>"+
+    (DEVICE_LOCAL ? syncCard() : "")+
     '<div class="card"><label class="fl">Export</label>'+
       '<div class="btnrow"><button class="btn" data-act="export-txt">Plain text</button>'+
       '<button class="btn" data-act="export-json">JSON backup</button></div>'+
@@ -2217,6 +2334,24 @@ document.addEventListener("click", ev => {
       renderSheet(); render(); return;
     }
     case "primary": S.settings.primary = !S.settings.primary; markDirty("plan"); render(); return;
+    case "sync-save": {
+      const u=(syncForm.url||"").trim().replace(/\/+$/,""), k=(syncForm.key||"").trim();
+      if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(u)){ syncState("error","That does not look like a Supabase project URL."); return; }
+      if(k.length < 40){ syncState("error","That anon key looks too short."); return; }
+      syncSave({ url:u, key:k }); SYNC.err=null; syncInit(); render(); return;
+    }
+    case "sync-signin": {
+      const e=(syncForm.email||"").trim();
+      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)){ syncState("error","Enter a valid email address."); return; }
+      syncSignIn(e); return;
+    }
+    case "sync-now": SYNC.err=null; if(SYNC.status==="error") syncInit(); else syncRun(); return;
+    case "sync-signout": if(SYNC.sb) SYNC.sb.auth.signOut(); SYNC.user=null; syncState("signedout"); return;
+    case "sync-forget": {
+      if(SYNC.sb) { try{ SYNC.sb.auth.signOut(); }catch(e){} }
+      try{ localStorage.removeItem(SYNC_CFG); }catch(e){}
+      SYNC.sb=null; SYNC.user=null; syncForm={url:"",key:"",email:""}; syncState("off"); return;
+    }
     case "reset-open": sheet = { kind:"reset", text:"" }; renderSheet(); return;
     case "reset-do": {
       if(sheet.text !== "RESET") return;
@@ -2257,6 +2392,9 @@ document.addEventListener("input", ev => {
     if(b) b.disabled = sheet.text !== "RESET";
     return;
   }
+  if(act === "syncurl"){ syncForm.url = el.value; return; }
+  if(act === "synckey"){ syncForm.key = el.value; return; }
+  if(act === "syncemail"){ syncForm.email = el.value; return; }
   if(act === "importtext"){ sheet.text = el.value; return; }
   if(act === "addname"){ sheet.name = el.value; return; }
   if(act === "addurl"){ sheet.url = el.value; return; }

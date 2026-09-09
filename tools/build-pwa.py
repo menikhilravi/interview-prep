@@ -75,8 +75,11 @@ async function flush(){
   const names = [...dirty]; dirty.clear();
   if(mode !== "idb" || !idb){ names.forEach(n => dirty.add(n)); return; }
   try{
-    await Promise.all(names.map(n => idbPut(idb, n, Object.assign({ v:1, at:new Date().toISOString() }, DOCS[n]()))));
-    setSave(dirty.size ? "busy" : "ok", dirty.size ? "saving" : "saved");
+    const at = new Date().toISOString();
+    await Promise.all(names.map(n => idbPut(idb, n, Object.assign({ v:1, at:at }, DOCS[n]()))));
+    names.forEach(n => localAt[n] = at);
+    setSave(dirty.size ? "busy" : "ok", dirty.size ? "saving" : "this device");
+    if(SYNC.status === "on" && !dirty.size){ clearTimeout(SYNC.t); SYNC.t = setTimeout(syncRun, 1200); }
   }catch(err){
     names.forEach(n => dirty.add(n));
     setSave("bad", (err && err.name === "QuotaExceededError") ? "storage full" : "not saved");
@@ -100,9 +103,9 @@ async function connect(){
   try{
     idb = await idbOpen(); mode = "idb";
     const vals = await Promise.all(DOC_NAMES.map(n => idbGet(idb, n)));
-    vals.forEach((v,i) => { if(v) absorb(DOC_NAMES[i], v); });
-    setSave(dirty.size ? "busy" : "ok", dirty.size ? "saving" : "saved");
-  }catch(e){ mode = "none"; setSave("bad","storage unavailable"); }
+    vals.forEach((v,i) => { if(v){ absorb(DOC_NAMES[i], v); localAt[DOC_NAMES[i]] = v.at || ""; } });
+    setSave(dirty.size ? "busy" : "ok", dirty.size ? "saving" : "this device");
+  }catch(e){ mode = "none"; setSave("bad","no storage"); }
   // ask the browser not to evict this data under storage pressure
   try{
     if(navigator.storage && navigator.storage.persist)
@@ -110,15 +113,17 @@ async function connect(){
   }catch(e){}
   render();
   if(dirty.size) flush();
+  syncInit();
 }
 async function reconcile(){
   if(mode !== "idb" || !idb || dirty.size) return;
   try{
     const vals = await Promise.all(DOC_NAMES.map(n => idbGet(idb, n)));
     touched.clear();
-    vals.forEach((v,i) => { if(v) absorb(DOC_NAMES[i], v); });
+    vals.forEach((v,i) => { if(v){ absorb(DOC_NAMES[i], v); localAt[DOC_NAMES[i]] = v.at || ""; } });
     render();
   }catch(e){}
+  syncRun();
 }
 '''
 body = body[:start] + IDB + body[end:]
@@ -276,8 +281,8 @@ self.addEventListener("fetch", e => {
   if(req.method !== "GET") return;
   const url = new URL(req.url);
 
-  /* Google Fonts: stale-while-revalidate, so the app keeps its type offline */
-  if(/^fonts\\.(googleapis|gstatic)\\.com$/.test(url.hostname)){
+  /* Fonts and the Supabase client: stale-while-revalidate, so both survive offline */
+  if(/^fonts\\.(googleapis|gstatic)\\.com$/.test(url.hostname) || url.hostname === "cdn.jsdelivr.net"){
     e.respondWith(caches.open(FONTS).then(async c => {
       const hit = await c.match(req);
       const net = fetch(req).then(r => { if(r && r.ok) c.put(req, r.clone()); return r; }).catch(() => hit);

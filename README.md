@@ -73,3 +73,27 @@ python3 tools/build-pwa.py && git add -A && git commit -m "..." && git push
 Pages redeploys in about a minute. The installed app picks the new version up on
 its next launch — the service worker serves the cached copy first, then refreshes
 in the background, so it never blocks on the network.
+
+## Sync (optional, PWA only)
+
+Each device keeps its own offline copy in IndexedDB and mirrors it to Supabase.
+The artifact syncs separately through the Claude account and is unaffected.
+
+**One-time, in Supabase:**
+
+1. Create a free project.
+2. SQL editor → paste and run `supabase/schema.sql`.
+3. Authentication → URL Configuration → add
+   `https://menikhilravi.github.io/interview-prep/` as a redirect URL.
+
+**Per device, in the app:** Settings → Sync across devices → paste the project
+URL and the **anon** key → Connect → enter your email → tap the link it sends.
+
+The anon key is public by design; the data is protected by row-level security
+scoped to `auth.uid()`, so the key alone gets an attacker nothing. Neither the
+URL nor the key is stored in this repo — they live in each device's
+`localStorage`, entered once.
+
+Merge is per-document last-write-wins on the stored timestamp. Editing two
+devices while both are offline means the one that syncs last wins for that
+section — fine for one person working on one device at a time.
