@@ -1,8 +1,13 @@
 -- Prep log sync — run once in the Supabase SQL editor.
 --
+-- SAFE TO RUN IN A PROJECT THAT ALREADY DOES SOMETHING ELSE. Every statement
+-- below names public.prep_state explicitly; nothing here alters another table,
+-- another policy, or any auth setting. Row-level security scopes the rows to
+-- the signed-in user, so this table cannot see or be seen by other app data.
+--
 -- Security model: the anon key in the app is public by design. Protection comes
--- from auth + row-level security below, which makes the database itself refuse
--- to return anyone's rows but your own. There is no secret to keep.
+-- from auth + the policies below, which make the database itself refuse to
+-- return anyone's rows but your own. There is no secret to keep.
 
 create table if not exists public.prep_state (
   user_id    uuid        not null references auth.users(id) on delete cascade,
@@ -16,7 +21,7 @@ create table if not exists public.prep_state (
 alter table public.prep_state enable row level security;
 
 -- Four explicit policies rather than one "for all": a mistake in a broad policy
--- fails open, and this table is the only copy of months of work.
+-- fails open, and this table holds months of work.
 drop policy if exists prep_state_select on public.prep_state;
 drop policy if exists prep_state_insert on public.prep_state;
 drop policy if exists prep_state_update on public.prep_state;
@@ -35,6 +40,13 @@ create policy prep_state_delete on public.prep_state
 revoke all on public.prep_state from anon;
 grant select, insert, update, delete on public.prep_state to authenticated;
 
--- Sanity check after running this — should print rowsecurity = true and 4 policies.
--- select relrowsecurity from pg_class where oid = 'public.prep_state'::regclass;
--- select policyname from pg_policies where tablename = 'prep_state';
+
+-- ── VERIFY ──────────────────────────────────────────────────────────────────
+-- Run this after the above. Expect: rls_enabled = true, and 4 policy rows.
+select relrowsecurity as rls_enabled
+  from pg_class where oid = 'public.prep_state'::regclass;
+
+select policyname, cmd
+  from pg_policies
+ where schemaname = 'public' and tablename = 'prep_state'
+ order by policyname;

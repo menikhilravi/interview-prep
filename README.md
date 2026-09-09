@@ -79,12 +79,17 @@ in the background, so it never blocks on the network.
 Each device keeps its own offline copy in IndexedDB and mirrors it to Supabase.
 The artifact syncs separately through the Claude account and is unaffected.
 
-**One-time, in Supabase:**
+**One-time, in Supabase.** A dedicated project is not required — `schema.sql`
+only ever names `public.prep_state`, so it is safe to run inside a project that
+already does something else. Free plan allows 2 *active* projects per org and
+unlimited paused ones.
 
-1. Create a free project.
-2. SQL editor → paste and run `supabase/schema.sql`.
-3. Authentication → URL Configuration → add
-   `https://menikhilravi.github.io/interview-prep/` as a redirect URL.
+1. Pick any project you control (existing is fine).
+2. SQL editor → paste and run `supabase/schema.sql`. The verify block at the
+   bottom should print `rls_enabled = true` and four policies.
+3. Authentication → URL Configuration → **add** (do not replace) 
+   `https://menikhilravi.github.io/interview-prep/` to the redirect URLs.
+4. Project Settings → API → copy the project URL and the **anon public** key.
 
 **Per device, in the app:** Settings → Sync across devices → paste the project
 URL and the **anon** key → Connect → enter your email → tap the link it sends.

@@ -1325,7 +1325,23 @@ function loadSB(){
     document.head.appendChild(el);
   });
 }
-function syncState(st, err){ SYNC.status = st; SYNC.err = err || null; render(); }
+/* Supabase speaks Postgres; these are the three things that actually go wrong
+   when pointing the app at a project that was set up for something else. */
+function syncFriendly(msg){
+  const m = String(msg || "");
+  if(/does not exist|Could not find the table|schema cache/i.test(m))
+    return "That project has no prep_state table yet — run supabase/schema.sql in its SQL editor.";
+  if(/row-level security|violates row-level|permission denied/i.test(m))
+    return "Row-level security rejected that. Re-run the policy block at the bottom of schema.sql.";
+  if(/JWT|Invalid API key|invalid.*key|apikey/i.test(m))
+    return "That anon key was rejected. Copy it again from Project Settings → API → anon public.";
+  if(/Failed to fetch|NetworkError|ERR_NAME|ENOTFOUND/i.test(m))
+    return "Could not reach Supabase. Check the project URL, or that you are online.";
+  if(/Email .*not authorized|redirect/i.test(m))
+    return "Supabase refused the sign-in link. Add this app's URL under Authentication → URL Configuration.";
+  return m;
+}
+function syncState(st, err){ SYNC.status = st; SYNC.err = err ? syncFriendly(err) : null; render(); }
 async function syncInit(){
   if(!DEVICE_LOCAL) return;
   const c = syncCfg();
@@ -1353,7 +1369,7 @@ async function syncRun(){
     await syncPush();
     await syncPull();
     SYNC.last = new Date().toISOString(); SYNC.err = null;
-  }catch(e){ SYNC.err = (e && e.message) || String(e); }
+  }catch(e){ SYNC.err = syncFriendly((e && e.message) || String(e)); }
   SYNC.busy = false; render();
 }
 async function syncPush(){
